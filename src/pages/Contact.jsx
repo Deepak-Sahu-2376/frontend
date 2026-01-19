@@ -116,16 +116,7 @@ export function Contact() {
               </div>
             </div>
 
-            {/* Call to Action */}
-            <div className="bg-white shadow-lg rounded-2xl p-8">
-              <h4 className="text-lg font-medium mb-3 text-gray-900">Ready to get started?</h4>
-              <p className="text-gray-600 mb-6 text-sm">
-                Schedule a free consultation with one of our real estate experts today.
-              </p>
-              <Button className="w-full bg-[#A17F5A] hover:bg-[#8e6f4e] text-white">
-                Schedule Consultation
-              </Button>
-            </div>
+           
           </div>
         </div>
       </div>

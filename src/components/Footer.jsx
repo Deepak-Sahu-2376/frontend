@@ -28,10 +28,11 @@ const Footer = () => {
             <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
             <ul className="space-y-2 text-sm">
               {[
+                { label: 'Projects', path: '/projects' },
                 { label: 'About Us', path: '/about' },
                 { label: 'Properties', path: '/properties' },
-                { label: 'Agents', path: '/agents' },
-                { label: 'Contact', path: '/contact' }
+                { label: 'Contact', path: '/contact' },
+                
               ].map((item) => (
                 <li key={item.label}>
                   <Link to={item.path} className="text-gray-400 hover:text-orange-400 transition">

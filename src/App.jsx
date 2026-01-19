@@ -15,7 +15,7 @@ import { toast } from 'sonner';
 
 // Lazy Load Pages
 const Home = lazy(() => import('./pages/Home'));
-const Agents = lazy(() => import('./pages/Agents'));
+
 const About = lazy(() => import('./pages/About'));
 const Contact = lazy(() => import('./pages/Contact'));
 const SignInPage = lazy(() => import('./pages/SignInPage').then(module => ({ default: module.SignInPage })));
@@ -174,7 +174,7 @@ function App() {
                 <Route path="/projects/:id" element={<ProjectDetails />} />
                 <Route path="/projects/:id/phases/:phaseId" element={<PhaseDetails />} />
                 <Route path="/property/:id" element={<PropertyDetailsPage />} />
-                <Route path="/agents" element={<Agents />} />
+
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/post-property" element={<h1>Post Property Page</h1>} />

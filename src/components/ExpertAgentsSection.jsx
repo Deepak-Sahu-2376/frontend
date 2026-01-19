@@ -1,11 +1,11 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+
 import { toast } from "sonner";
 import { Phone, Mail } from "lucide-react";
 import { agents } from "../data/agents";
 
 const ExpertAgentsSection = () => {
-  const navigate = useNavigate();
+
   const displayedAgents = agents.slice(0, 4);
 
   return (
@@ -112,15 +112,7 @@ const ExpertAgentsSection = () => {
           ))}
         </div>
 
-        {/* View All Button */}
-        <div className="flex justify-center mt-12">
-          <button
-            onClick={() => navigate('/agents')}
-            className="px-8 py-3 border border-[#a87a4c] text-[#a87a4c] font-semibold rounded-md hover:bg-[#a87a4c] hover:text-white transition-colors"
-          >
-            View All Agents
-          </button>
-        </div>
+
 
         {/* CALL TO ACTION SECTION */}
         <div className="mt-20 bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center max-w-5xl mx-auto">

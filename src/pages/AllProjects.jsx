@@ -154,14 +154,6 @@ const AllProjects = () => {
             />
             <div className="max-w-7xl mx-auto">
 
-                {/* Header Section */}
-                <div className="text-center mb-16">
-                    <h1 className="text-4xl font-bold text-gray-900 mb-4">Our Projects</h1>
-                    <p className="text-gray-500 max-w-2xl mx-auto text-lg leading-relaxed">
-                        Explore our portfolio of innovative designs and successful projects across various sectors.
-                        Each project represents our commitment to excellence and creativity.
-                    </p>
-                </div>
 
                 {/* Filter Section */}
                 <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 mb-8">

@@ -18,6 +18,7 @@ import { Card, CardContent } from '../components/ui/card';
 import MapComponent from '../components/MapComponent';
 import ContactAgentForm from '../components/ContactAgentForm';
 import ScheduleVisitForm from '../components/ScheduleVisitForm';
+import EMICalculator from '../components/EMICalculator';
 import { API_BASE_URL } from '../utils/apiClient';
 import { toast } from 'sonner';
 
@@ -467,6 +468,11 @@ const PropertyDetails = () => {
                                     <p className="font-medium text-gray-900">{property.daysSinceLastActivity} days listed</p>
                                 </div>
                             </div>
+                        </div>
+
+                        {/* EMI Calculator */}
+                        <div className="py-8 border-t border-gray-100">
+                            <EMICalculator propertyPrice={property.basePrice} />
                         </div>
 
                         {/* Property Video */}
