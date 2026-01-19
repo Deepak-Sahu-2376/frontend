@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import VideoPlayer from './VideoPlayer';
 
 const stats = [
   { icon: '🏠', value: '10K+', label: 'Properties' },
@@ -39,19 +38,18 @@ const HeroSection = () => {
 
       {/* Background Video */}
       <div className="absolute inset-0 w-full h-full z-0">
-        <VideoPlayer
-          src="/assets/video/heroSection.mp4"
-          className="w-full h-full"
-          videoClassName="object-cover"
-          overlayClassName="bg-black/40"
+        <video
+          className="w-full h-full object-cover"
+          autoPlay
+          loop
+          muted
+          playsInline
         >
-          {/* We can pass the black overlay as children if we want specific layering, 
-              but VideoPlayer has an overlayClassName prop which we can use or 
-              we can keep the overlay as a child. 
-              The current VideoPlayer implementation puts children in a div with overlayClassName.
-              So if I pass overlayClassName="bg-black/40", the children container gets that class.
-          */}
-        </VideoPlayer>
+          <source src="/assets/video/heroSection.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-black/40"></div>
       </div>
 
       {/* Main Content (Title, Search Bar) */}

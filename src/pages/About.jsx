@@ -3,7 +3,6 @@ import { CheckCircle, Award, Clock, Star, Users, Briefcase, Target, Phone } from
 import { Button } from "../components/ui/button.jsx";
 import SEO from "../components/SEO";
 import { Link } from "react-router-dom";
-import VideoPlayer from "../components/VideoPlayer";
 
 export function About() {
   const features = [
@@ -84,11 +83,19 @@ export function About() {
             </p>
           </div>
           {/* Video Section moved here for better layout */}
-          <VideoPlayer
-            src="/assets/video/deshrock.mp4"
-            poster="/video-poster.png"
-            className="rounded-2xl shadow-2xl aspect-video bg-gray-100"
-          />
+          <div className="relative rounded-2xl shadow-2xl overflow-hidden aspect-video">
+            <video
+              className="w-full h-full object-cover"
+              src="/assets/video/deshrock.mp4"
+              autoPlay
+              loop
+              muted
+              playsInline
+            >
+              Your browser does not support the video tag.
+            </video>
+            <div className="absolute inset-0 bg-black/20"></div>
+          </div>
         </div>
       </section>
 

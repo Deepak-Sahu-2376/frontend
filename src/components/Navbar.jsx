@@ -95,7 +95,6 @@ const Navbar = () => {
         { name: 'Free Zone', path: '/properties?type=FREE_ZONE' }
       ]
     },
-    { name: 'Projects', path: '/projects' },
     { name: 'About', path: '/about' },
     { name: 'Contact', path: '/contact' },
   ];
