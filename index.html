@@ -11,20 +11,22 @@
   <meta http-equiv="X-XSS-Protection" content="1; mode=block">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta http-equiv="Content-Security-Policy"
-    content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://maps.googleapis.com blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https: blob: http://localhost:8080; font-src 'self' data: https://fonts.gstatic.com; media-src 'self' blob: http://localhost:8080 https://43.204.219.37 http://43.204.219.37 https://api.deshrock.com; connect-src 'self' data: http://localhost:8080 http://43.204.219.37 https://43.204.219.37 https://api.deshrock.com https://api.brickbroker.com https://maps.googleapis.com https://maps.gstatic.com https://www.gstatic.com; frame-src 'self' https: blob:;">
+    content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://maps.googleapis.com blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https: blob:; font-src 'self' data: https://fonts.gstatic.com; media-src 'self' blob: http://localhost:8080 https://43.204.219.37 http://43.204.219.37 https://api.deshrock.com https://res.cloudinary.com; connect-src 'self' data: http://localhost:8080 http://43.204.219.37 https://43.204.219.37 https://api.deshrock.com https://api.brickbroker.com https://maps.googleapis.com https://maps.gstatic.com https://www.gstatic.com; frame-src 'self' https: blob:;">
 
-  <title>DeshRock - Real Estate Platform</title>
+  <title>DeshRock - Explore Real Estate and Property In INDIA</title>
   <meta name="description"
-    content="DeshRock connects you with premium properties, trusted agents, and top developers. Find your dream home or investment today." />
+    content="DeshRock is your trusted partner for all real estate needs, offering expert services in buying, selling and renting properties. Gurgaon Real estate" />
 
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="DeshRock - Real Estate Platform" />
+  <meta property="og:title" content="DeshRock - Explore Real Estate and Property In INDIA" />
   <meta property="og:description" content="Connect with premium properties and trusted agents." />
   <meta property="og:image" content="/deshrock.svg" />
   <meta property="twitter:card" content="summary_large_image" />
-  <meta property="twitter:title" content="DeshRock - Real Estate Platform" />
+  <meta property="twitter:title" content="DeshRock - Explore Real Estate and Property In INDIA" />
   <meta property="twitter:description" content="Connect with premium properties and trusted agents." />
   <meta property="twitter:image" content="/deshrock.svg" />
+  <meta name="facebook-domain-verification" content="ey4y4lq3civom9s62z4pdo4ta39dza" />
+  <meta name="google-site-verification" content="OIaWxzZskHlJLufe7Pz3ufFmO5nAqq-beEi3qZMbmCI" />
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then(function (registrations) {
@@ -34,9 +36,34 @@
       });
     }
   </script>
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-RZDBVH617Y"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+
+    gtag('config', 'G-RZDBVH617Y');
+  </script>
+
+  <!-- Google Tag Manager -->
+  <script>(function (w, d, s, l, i) {
+      w[l] = w[l] || []; w[l].push({
+        'gtm.start':
+          new Date().getTime(), event: 'gtm.js'
+      }); var f = d.getElementsByTagName(s)[0],
+        j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+          'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+    })(window, document, 'script', 'dataLayer', 'GTM-TQ9VJ2VV');</script>
+  <!-- End Google Tag Manager -->
 </head>
 
 <body>
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TQ9VJ2VV" height="0" width="0"
+      style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
   <div id="root"></div>
   <script type="module" src="/src/main.jsx"></script>
 </body>
