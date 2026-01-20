@@ -69,7 +69,7 @@ const AdminProperties = () => {
                                             {property.verificationStatus || property.status}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 text-gray-900 font-medium">{formatPrice(property.basePrice || property.price)}</td>
+                                    <td className="px-6 py-4 text-gray-900 font-medium">{formatPrice(property.basePrice || property.monthlyRent || property.price)}</td>
                                     <td className="px-6 py-4">
                                         <div className="flex items-center space-x-2">
                                             {(property.verificationStatus || property.status) === 'PENDING' ? (
@@ -138,7 +138,7 @@ const AdminProperties = () => {
                                 </div>
                                 <div>
                                     <p className="text-xs text-gray-400 uppercase">Price</p>
-                                    <p className="font-medium text-gray-900">{formatPrice(property.basePrice || property.price)}</p>
+                                    <p className="font-medium text-gray-900">{formatPrice(property.basePrice || property.monthlyRent || property.price)}</p>
                                 </div>
                                 <div>
                                     <p className="text-xs text-gray-400 uppercase">Type</p>

@@ -19,6 +19,7 @@ import MapComponent from '../components/MapComponent';
 import ContactAgentForm from '../components/ContactAgentForm';
 import ScheduleVisitForm from '../components/ScheduleVisitForm';
 import { API_BASE_URL } from '../utils/apiClient';
+import { getImageUrl } from '../utils/imageHelper';
 import { toast } from 'sonner';
 
 // Amenity icon mapping (Comprehensive)
@@ -140,17 +141,12 @@ const PropertyDetails = () => {
                 const data = json.data;
 
                 if (response.ok && data) {
-                    // Helper to ensure full URL
-                    const getFullUrl = (url) => {
-                        if (!url) return null;
-                        if (url.startsWith('http')) return url;
-                        return `${API_BASE_URL}${url}`;
-                    };
+
 
                     // Normalize data for UI
                     const media = (data.images || []).map((url, index) => ({
                         type: 'image',
-                        url: getFullUrl(url),
+                        url: getImageUrl(url),
                         label: `Image ${index + 1}`
                     })).filter(item => item.url);
 
@@ -168,8 +164,8 @@ const PropertyDetails = () => {
                         media: media,
                         amenitiesList: amenitiesList,
                         formattedPrice: formatPrice(data.basePrice),
-                        videoUrl: getFullUrl(data.videoUrl || data.video),
-                        floorPlan: getFullUrl(data.floorPlan),
+                        videoUrl: getImageUrl(data.videoUrl || data.video),
+                        floorPlan: getImageUrl(data.floorPlan),
 
                         // Derived for UI
                         configurationDisplay: data.bedrooms ? `${data.bedrooms} BHK` : 'Studio',

@@ -111,9 +111,19 @@ const AdminInquiries = () => {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <Badge variant="outline" className="font-mono">
-                                                #{inquiry.propertyId}
-                                            </Badge>
+                                            <div className="flex flex-col">
+                                                <span className="font-medium text-gray-900">
+                                                    {inquiry.property?.title || inquiry.project?.name || "N/A"}
+                                                </span>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <Badge variant="outline" className="font-mono text-xs">
+                                                        {inquiry.property ? 'Property' : (inquiry.project ? 'Project' : 'N/A')}
+                                                    </Badge>
+                                                    <span className="text-xs text-gray-400">
+                                                        #{inquiry.property?.id || inquiry.project?.id || "?"}
+                                                    </span>
+                                                </div>
+                                            </div>
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="max-w-xs truncate text-gray-600" title={inquiry.message}>
@@ -140,9 +150,16 @@ const AdminInquiries = () => {
                                                     size="sm"
                                                     variant="outline"
                                                     className="h-8"
-                                                    onClick={() => navigate(`/property/${inquiry.propertyId}`)}
+                                                    onClick={() => {
+                                                        if (inquiry.property) {
+                                                            navigate(`/property/${inquiry.property.id}`);
+                                                        } else if (inquiry.project) {
+                                                            navigate(`/projects/${inquiry.project.id}`);
+                                                        }
+                                                    }}
+                                                    disabled={!inquiry.property && !inquiry.project}
                                                 >
-                                                    View Property
+                                                    View {inquiry.property ? 'Property' : 'Project'}
                                                 </Button>
                                             </div>
                                         </td>
@@ -166,6 +183,7 @@ const AdminInquiries = () => {
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Inquiry Message</DialogTitle>
+                        <DialogDescription>Full details of the customer inquiry.</DialogDescription>
                     </DialogHeader>
                     <div className="py-4">
                         <p className="text-gray-700 whitespace-pre-wrap">{selectedMessage || "No message content."}</p>

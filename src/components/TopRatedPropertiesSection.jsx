@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { API_BASE_URL } from "../utils/apiClient";
+import { getImageUrl } from "../utils/imageHelper";
 
 const TopRatedPropertiesSection = () => {
   const navigate = useNavigate();
@@ -63,12 +64,6 @@ const TopRatedPropertiesSection = () => {
         }
 
         if (fetchedProps && fetchedProps.length > 0) {
-          const getFullUrl = (url) => {
-            if (!url) return null;
-            if (url.startsWith('http')) return url;
-            return `${API_BASE_URL}${url}`;
-          };
-
           const mappedProps = fetchedProps.map(p => ({
             id: p.id,
             title: p.title,
@@ -76,7 +71,7 @@ const TopRatedPropertiesSection = () => {
             location: p.formattedAddress || p.address?.city || p.city || "Unknown Location",
             featureTag: "Top Rated",
             premiumTag: p.listingType === 'SALE' ? "For Sale" : "For Rent",
-            image: getFullUrl(p.primaryImageUrl || p.images?.[0]) || 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&q=80&w=1000',
+            image: getImageUrl(p.primaryImageUrl || p.images?.[0]) || 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&q=80&w=1000',
             highlight: p.propertyHighlights?.[0] || p.propertyType?.replace('_', ' ') || "Premium Property",
             rating: 4.8,
             reviews: Math.floor(Math.random() * 50) + 10,

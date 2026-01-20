@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { API_BASE_URL } from "../utils/apiClient";
+import { getImageUrl } from "../utils/imageHelper";
 
 const FeaturedPropertiesSection = () => {
   const navigate = useNavigate();
@@ -56,11 +57,8 @@ const FeaturedPropertiesSection = () => {
             location: p.formattedAddress || p.city, // Prefer formatted address
             featureTag: p.isFeatured ? "Featured" : (p.isVerified ? "Verified" : "New"),
             premiumTag: p.listingType === 'SALE' ? "For Sale" : "For Rent",
-            image: (p.primaryImageUrl || p.images?.[0])
-              ? ((p.primaryImageUrl || p.images?.[0]).startsWith('/uploads')
-                ? `${API_BASE_URL}${p.primaryImageUrl || p.images?.[0]}`
-                : (p.primaryImageUrl || p.images?.[0]))
-              : "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1200",
+            image: getImageUrl(p.primaryImageUrl || p.images?.[0])
+              || "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1200",
             highlight: p.propertyType?.replace('_', ' '),
             rating: 4.8, // Placeholder
             reviews: Math.floor(Math.random() * 50) + 10, // Placeholder

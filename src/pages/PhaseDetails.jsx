@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
     ArrowLeft, MapPin, Calendar, Ruler, Building2,
-    Home, Shield, CheckCircle2, FileText, Maximize2, Eye, X,
+    Home, Shield, CheckCircle2, FileText, Maximize2, Eye, X, ExternalLink,
     Waves, Dumbbell, Gamepad2, Trees, Car, Zap, Leaf, Wind,
     BookOpen, ArrowUpDown, Droplets, Recycle, Brush, Shirt, Camera, ShieldAlert,
     UserCheck, Sprout, CloudRain, Sun, Banknote, Briefcase, Projector, PawPrint,
@@ -11,8 +11,9 @@ import {
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Card, CardContent } from '../components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
 import { API_BASE_URL } from '../utils/apiClient';
+import { getImageUrl } from '../utils/imageHelper';
 import { toast } from 'sonner';
 import { useUser } from '../contexts/UserContext';
 import ContactAgentForm from '../components/ContactAgentForm';
@@ -207,7 +208,7 @@ const PhaseDetails = () => {
                             <div className="w-16 h-16 rounded-lg border bg-white flex items-center justify-center overflow-hidden shrink-0">
                                 {phase.phaseLogoUrl ? (
                                     <img
-                                        src={phase.phaseLogoUrl}
+                                        src={getImageUrl(phase.phaseLogoUrl)}
                                         alt="Phase Logo"
                                         className="w-full h-full object-contain"
                                         onError={(e) => {
@@ -236,7 +237,9 @@ const PhaseDetails = () => {
                         <div className="text-right">
                             <p className="text-sm text-gray-500 mb-1">Price Range</p>
                             <p className="text-2xl font-bold text-blue-600">
-                                {phase.formattedPriceRange || `Starting from ₹${phase.startingPrice}`}
+                                {phase.priceList && phase.priceList.length > 0
+                                    ? `Starting from ${phase.priceList[0].price}`
+                                    : (phase.startingPrice ? `Starting from ₹${phase.startingPrice}` : 'Price on Request')}
                             </p>
                             <Button
                                 className="mt-2 bg-blue-600 hover:bg-blue-700 text-white"
@@ -250,15 +253,15 @@ const PhaseDetails = () => {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
                         <div>
                             <p className="text-xs text-gray-500 mb-1">Phase Status</p>
-                            <p className="font-semibold">{phase.constructionStatus || phase.status}</p>
+                            <p className="font-semibold">{phase.constructionStatus || phase.status || 'TBD'}</p>
                         </div>
                         <div>
                             <p className="text-xs text-gray-500 mb-1">RERA Number</p>
-                            <p className="font-semibold">{phase.reraNumber || 'N/A'}</p>
+                            <p className="font-semibold">{phase.reraNumber || 'Pending'}</p>
                         </div>
                         <div>
                             <p className="text-xs text-gray-500 mb-1">Total Units</p>
-                            <p className="font-semibold">{phase.totalUnits || 0}</p>
+                            <p className="font-semibold">{phase.totalUnits || 'TBD'}</p>
                         </div>
                         <div>
                             <p className="text-xs text-gray-500 mb-1">Booked Units</p>
@@ -279,30 +282,27 @@ const PhaseDetails = () => {
                                     {/* Launch Date (if parsed from string/date) - using created/updated as fallback or specific fields if available */}
                                     <div>
                                         <p className="text-sm text-gray-500 mb-1 flex items-center gap-1">
-                                            <Calendar className="w-4 h-4" /> Approved At
+                                            <Calendar className="w-4 h-4" /> Launched At
                                         </p>
-                                        <p className="font-medium">{phase.approvedAt ? new Date(phase.approvedAt).toLocaleDateString() : 'N/A'}</p>
+                                        <p className="font-medium">{phase.launchDate ? new Date(phase.launchDate).toLocaleDateString() : (phase.createdAt ? new Date(phase.createdAt).toLocaleDateString() : 'N/A')}</p>
                                     </div>
                                     <div>
                                         <p className="text-sm text-gray-500 mb-1 flex items-center gap-1">
                                             <Building2 className="w-4 h-4" /> Completion
                                         </p>
-                                        <p className="font-medium">{phase.completionPercentage}%</p>
+                                        <p className="font-medium">{phase.completionPercentage ? `${phase.completionPercentage}%` : '0%'}</p>
                                     </div>
                                     <div>
                                         <p className="text-sm text-gray-500 mb-1 flex items-center gap-1">
-                                            <Ruler className="w-4 h-4" /> Carpet Area
+                                            <Ruler className="w-4 h-4" /> Total Area
                                         </p>
-                                        <p className="font-medium">{phase.carpetArea ? `${phase.carpetArea} sq.ft` : 'N/A'}</p>
+                                        <p className="font-medium">{phase.totalArea ? `${phase.totalArea} sq.ft` : (phase.carpetArea ? `${phase.carpetArea} sq.ft` : 'N/A')}</p>
                                     </div>
                                     <div>
                                         <p className="text-sm text-gray-500 mb-1 flex items-center gap-1">
-                                            <Shield className="w-4 h-4" /> Clearances
+                                            <Shield className="w-4 h-4" /> Possession
                                         </p>
-                                        <div className="flex flex-col text-xs font-medium gap-1">
-                                            <span className={phase.environmentalClearance ? "text-green-600" : "text-gray-400"}>Env: {phase.environmentalClearance ? 'Yes' : 'No'}</span>
-                                            <span className={phase.fireSafetyClearance ? "text-green-600" : "text-gray-400"}>Fire: {phase.fireSafetyClearance ? 'Yes' : 'No'}</span>
-                                        </div>
+                                        <p className="font-medium">{phase.possessionDate ? new Date(phase.possessionDate).toLocaleDateString() : 'TBD'}</p>
                                     </div>
                                 </div>
 
@@ -394,7 +394,7 @@ const PhaseDetails = () => {
                                 <div className="space-y-3">
                                     {phase.phaseBrochureUrl && (
                                         <div
-                                            onClick={() => handleViewDocument(phase.phaseBrochureUrl, "Brochure")}
+                                            onClick={() => handleViewDocument(getImageUrl(phase.phaseBrochureUrl), "Brochure")}
                                             className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors group cursor-pointer"
                                         >
                                             <div className="flex items-center gap-3">
@@ -411,7 +411,7 @@ const PhaseDetails = () => {
                                     )}
                                     {phase.masterPlanUrl && (
                                         <div
-                                            onClick={() => handleViewDocument(phase.masterPlanUrl, "Master Plan")}
+                                            onClick={() => handleViewDocument(getImageUrl(phase.masterPlanUrl), "Master Plan")}
                                             className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors group cursor-pointer"
                                         >
                                             <div className="flex items-center gap-3">
@@ -435,20 +435,40 @@ const PhaseDetails = () => {
                                 <h3 className="text-lg font-bold text-gray-900 mb-4">Floor Plans</h3>
                                 {phase.floorPlanUrls && phase.floorPlanUrls.length > 0 ? (
                                     <div className="grid grid-cols-2 gap-2">
-                                        {phase.floorPlanUrls.map((url, idx) => (
-                                            <div
-                                                key={idx}
-                                                onClick={() => handleViewDocument(url, `Floor Plan ${idx + 1}`)}
-                                                className="block relative aspect-square bg-gray-100 rounded-lg overflow-hidden hover:opacity-90 transition-opacity cursor-pointer"
-                                            >
-                                                <img src={url} alt={`Floor Plan ${idx + 1}`} className="w-full h-full object-cover" />
-                                                <div className="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/10 transition-colors">
-                                                    <div className="bg-white/90 p-1.5 rounded-full shadow-sm opacity-0 hover:opacity-100 transition-opacity">
-                                                        <Maximize2 className="w-4 h-4 text-gray-900" />
+                                        {phase.floorPlanUrls.map((url, idx) => {
+                                            const fullUrl = getImageUrl(url);
+                                            const isPdf = fullUrl?.toLowerCase().endsWith('.pdf');
+
+                                            return (
+                                                <div
+                                                    key={idx}
+                                                    onClick={() => handleViewDocument(fullUrl, `Floor Plan ${idx + 1}`)}
+                                                    className="block relative aspect-square bg-gray-100 rounded-lg overflow-hidden hover:opacity-90 transition-opacity cursor-pointer border"
+                                                >
+                                                    {isPdf ? (
+                                                        <div className="w-full h-full flex flex-col items-center justify-center text-gray-500 bg-white">
+                                                            <FileText className="w-8 h-8 mb-2 text-red-500" />
+                                                            <span className="text-xs font-medium">PDF Floor Plan</span>
+                                                        </div>
+                                                    ) : (
+                                                        <img
+                                                            src={fullUrl}
+                                                            alt={`Floor Plan ${idx + 1}`}
+                                                            className="w-full h-full object-cover"
+                                                            onError={(e) => {
+                                                                e.target.onerror = null;
+                                                                e.target.src = 'https://placehold.co/400?text=No+Preview';
+                                                            }}
+                                                        />
+                                                    )}
+                                                    <div className="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/10 transition-colors">
+                                                        <div className="bg-white/90 p-1.5 rounded-full shadow-sm opacity-0 hover:opacity-100 transition-opacity">
+                                                            <Maximize2 className="w-4 h-4 text-gray-900" />
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                 ) : (
                                     <p className="text-sm text-gray-500 italic">No floor plans available.</p>
@@ -501,21 +521,26 @@ const PhaseDetails = () => {
                 ) : (
                     // Standard Dialog for PDFs/Other
                     <Dialog open={viewDoc.isOpen} onOpenChange={(open) => !open && setViewDoc(prev => ({ ...prev, isOpen: false }))}>
-                        <DialogContent className="max-w-4xl w-full h-[90vh] p-0 overflow-hidden bg-gray-100">
-                            <DialogHeader className="p-4 bg-white border-b flex flex-row items-center justify-between">
-                                <DialogTitle>{viewDoc.title}</DialogTitle>
+                        <DialogContent className="max-w-[95vw] w-full h-[95vh] p-0 flex flex-col bg-white overflow-hidden">
+                            <DialogHeader className="px-6 py-4 border-b flex flex-row items-center justify-between shrink-0">
+                                <div>
+                                    <DialogTitle className="text-xl">{viewDoc.title}</DialogTitle>
+                                    <DialogDescription className="text-sm text-muted-foreground mt-1">
+                                        Document Preview
+                                    </DialogDescription>
+                                </div>
+                                <div className="flex items-center gap-2 mr-8">
+                                    <Button variant="outline" size="sm" onClick={() => window.open(viewDoc.url, '_blank')}>
+                                        <ExternalLink className="w-4 h-4 mr-2" />
+                                        Open in New Tab
+                                    </Button>
+                                </div>
                             </DialogHeader>
-                            <div className="w-full h-full bg-gray-200 flex items-center justify-center relative">
-                                <div
-                                    className="absolute inset-0 z-10 opacity-0"
-                                    onContextMenu={(e) => e.preventDefault()}
-                                    style={{ pointerEvents: 'none' }}
-                                ></div>
+                            <div className="flex-1 w-full bg-gray-50 relative">
                                 <iframe
                                     src={viewDoc.url}
-                                    className="w-full h-full"
+                                    className="w-full h-full border-0"
                                     title="Document Viewer"
-                                    sandbox="allow-scripts allow-same-origin allow-forms"
                                 />
                             </div>
                         </DialogContent>
@@ -528,6 +553,7 @@ const PhaseDetails = () => {
                 onClose={() => setIsContactModalOpen(false)}
                 title={phase ? `${project?.name} - Phase ${phase.phaseNumber}` : ''}
                 phaseId={phase?.id}
+                projectId={id}
             />
         </div>
     );

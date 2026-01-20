@@ -124,13 +124,13 @@ const AdminDashboard = () => {
                                     <tr key={property.id} className="hover:bg-gray-50 transition-colors">
                                         <td className="px-6 py-4 font-medium text-gray-900">{property.title}</td>
                                         <td className="px-6 py-4 text-gray-600">{property.city}</td>
-                                        <td className="px-6 py-4 text-gray-600">{property.type}</td>
+                                        <td className="px-6 py-4 text-gray-600">{property.propertyType}</td>
                                         <td className="px-6 py-4">
                                             <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(property.status)}`}>
                                                 {property.status}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-gray-900 font-medium">{property.price}</td>
+                                        <td className="px-6 py-4 text-gray-900 font-medium">₹{property.basePrice || property.monthlyRent || '0'}</td>
                                         <td className="px-6 py-4">
                                             <div className="flex space-x-2">
                                                 {property.status === 'PENDING' && (
@@ -178,11 +178,13 @@ const AdminDashboard = () => {
                                 <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
                                     <div>
                                         <p className="text-xs text-gray-400 uppercase">Price</p>
-                                        <p className="font-medium text-gray-900">{property.price}</p>
+                                        <p className="font-medium text-gray-900">
+                                            ₹{property.basePrice || property.monthlyRent || '0'}
+                                        </p>
                                     </div>
                                     <div>
                                         <p className="text-xs text-gray-400 uppercase">Type</p>
-                                        <p>{property.type}</p>
+                                        <p>{property.propertyType}</p>
                                     </div>
                                 </div>
 

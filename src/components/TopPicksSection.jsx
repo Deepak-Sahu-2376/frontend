@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { API_BASE_URL } from "../utils/apiClient";
+import { getImageUrl } from "../utils/imageHelper";
 import { toast } from 'sonner';
 
 const TopPicksSection = () => {
@@ -15,20 +16,7 @@ const TopPicksSection = () => {
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
 
-  /* ------------------------------------------
-     HELPER: Get Full Image URL
-  ------------------------------------------- */
-  const getFullUrl = (url) => {
-    if (!url) return null;
-    if (url.startsWith('http') || url.startsWith('blob:')) return url;
-    // Ensure API_BASE_URL doesn't end with slash if url starts with one, or handle cleaner
-    // But typically API_BASE_URL is origin. 
-    // If API_BASE_URL is empty (proxy), we need to know. 
-    // If proxy only handles /api, then empty API_BASE_URL => localhost:5173/uploads -> 404.
-    // So we ideally need the backend URL explicitly if not proxied.
-    // However, usually VITE_API_BASE_URL is set to http://localhost:8080.
-    return `${API_BASE_URL}${url.startsWith('/') ? '' : '/'}${url}`;
-  };
+
 
   // Fetch Data
   useEffect(() => {
@@ -56,7 +44,7 @@ const TopPicksSection = () => {
             sqft: p.formattedArea || (p.totalArea + " sq.ft"),
             tag: p.projectType || 'Project',
             amenities: p.amenities?.map(a => (typeof a === 'string' ? a : a.name || '').replace(/_/g, ' ')).slice(0, 3) || [],
-            image: getFullUrl(p.mediaFiles?.find(m => m.category === 'EXTERIOR' || m.isPrimary)?.mediaUrl || p.mediaFiles?.[0]?.mediaUrl)
+            image: getImageUrl(p.mediaFiles?.find(m => m.category === 'EXTERIOR' || m.isPrimary)?.mediaUrl || p.mediaFiles?.[0]?.mediaUrl)
           }));
 
           setProperties(mappedProps);

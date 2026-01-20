@@ -17,6 +17,7 @@ import { Card, CardContent } from '../components/ui/card';
 import MapComponent from '../components/MapComponent';
 import ContactAgentForm from '../components/ContactAgentForm';
 import { API_BASE_URL } from '../utils/apiClient';
+import { getImageUrl } from '../utils/imageHelper';
 
 
 // Amenity icon mapping (Comprehensive)
@@ -127,11 +128,7 @@ const ProjectDetails = () => {
                 if (result.success) {
                     const data = result.data;
 
-                    const getFullUrl = (url) => {
-                        if (!url) return null;
-                        if (url.startsWith('http') || url.startsWith('blob:')) return url;
-                        return `${API_BASE_URL}${url.startsWith('/') ? '' : '/'}${url}`;
-                    };
+
 
                     // Parse location advantages if it's a string
                     let highlights = [];
@@ -152,8 +149,8 @@ const ProjectDetails = () => {
                         ?.filter(file => ['IMAGE', 'VIDEO'].includes(file.type))
                         .map(file => ({
                             type: file.type === 'VIDEO' ? 'video' : 'image',
-                            url: getFullUrl(file.mediaUrl),
-                            thumbnail: file.type === 'VIDEO' ? getFullUrl(file.mediaUrl) : undefined,
+                            url: getImageUrl(file.mediaUrl),
+                            thumbnail: file.type === 'VIDEO' ? getImageUrl(file.mediaUrl) : undefined,
                             label: file.categoryLabel || file.category
                         })) || [];
 
@@ -176,7 +173,7 @@ const ProjectDetails = () => {
                     if (data.phases) {
                         data.phases = data.phases.map(p => ({
                             ...p,
-                            phaseLogoUrl: getFullUrl(p.phaseLogoUrl)
+                            phaseLogoUrl: getImageUrl(p.phaseLogoUrl)
                         }));
                     }
 
@@ -369,7 +366,7 @@ const ProjectDetails = () => {
                                         }}
                                     >
                                         {media.type === 'video' ? (
-                                             <video src={media.url} className="w-full h-full object-cover" muted loop playsInline />
+                                            <video src={media.url} className="w-full h-full object-cover" muted loop playsInline />
                                         ) : (
                                             <img
                                                 src={media.url}
