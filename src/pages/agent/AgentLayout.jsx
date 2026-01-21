@@ -136,7 +136,14 @@ const AgentLayout = ({ children }) => {
                                 <p className="text-xs text-gray-500">{user?.email || 'agent@deshrock.in'}</p>
                             </div>
                             {user?.profileImageUrl ? (
-                                <img src={user.profileImageUrl} alt="Profile" className="h-10 w-10 rounded-full object-cover border border-gray-200" />
+                                <img
+                                    src={user.profileImageUrl.startsWith('http')
+                                        ? user.profileImageUrl
+                                        : `${import.meta.env.VITE_API_BASE_URL || ''}${user.profileImageUrl}`
+                                    }
+                                    alt="Profile"
+                                    className="h-10 w-10 rounded-full object-cover border border-gray-200"
+                                />
                             ) : (
                                 <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold">
                                     {user?.name ? user.name.substring(0, 2).toUpperCase() : 'AG'}

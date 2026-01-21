@@ -349,7 +349,14 @@ const AdminLayout = ({ children }) => {
                                     </div>
                                     <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold hover:bg-orange-200 transition-colors overflow-hidden border border-orange-200">
                                         {(adminUser?.profileImageUrl || adminUser?.avatar) ? (
-                                            <img src={adminUser.profileImageUrl || adminUser.avatar} alt={adminUser.name} className="h-full w-full object-cover" />
+                                            <img
+                                                src={(adminUser.profileImageUrl || adminUser.avatar).startsWith('http')
+                                                    ? (adminUser.profileImageUrl || adminUser.avatar)
+                                                    : `${import.meta.env.VITE_API_BASE_URL || ''}${adminUser.profileImageUrl || adminUser.avatar}`
+                                                }
+                                                alt={adminUser.name}
+                                                className="h-full w-full object-cover"
+                                            />
                                         ) : (
                                             adminUser?.initials || 'AU'
                                         )}

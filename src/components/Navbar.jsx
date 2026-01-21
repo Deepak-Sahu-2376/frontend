@@ -195,7 +195,14 @@ const Navbar = () => {
                 <DropdownMenuTrigger asChild>
                   <button className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-100 text-orange-600 font-bold hover:bg-orange-200 transition-colors cursor-pointer overflow-hidden border border-orange-200">
                     {user?.profileImageUrl ? (
-                      <img src={user.profileImageUrl} alt={user.name} className="h-full w-full object-cover" />
+                      <img
+                        src={user.profileImageUrl.startsWith('http')
+                          ? user.profileImageUrl
+                          : `${import.meta.env.VITE_API_BASE_URL || ''}${user.profileImageUrl}`
+                        }
+                        alt={user.name}
+                        className="h-full w-full object-cover"
+                      />
                     ) : (
                       user?.name?.charAt(0).toUpperCase() || <User className="h-5 w-5" />
                     )}

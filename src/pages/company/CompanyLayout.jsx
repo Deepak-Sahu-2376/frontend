@@ -271,7 +271,14 @@ const CompanyLayout = ({ children }) => {
                                     </div>
                                     <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold hover:bg-orange-200 transition-colors overflow-hidden border border-orange-200">
                                         {(user?.profileImageUrl || user?.avatar) ? (
-                                            <img src={user.profileImageUrl || user.avatar} alt={user.name} className="h-full w-full object-cover" />
+                                            <img
+                                                src={(user.profileImageUrl || user.avatar).startsWith('http')
+                                                    ? (user.profileImageUrl || user.avatar)
+                                                    : `${import.meta.env.VITE_API_BASE_URL || ''}${user.profileImageUrl || user.avatar}`
+                                                }
+                                                alt={user.name}
+                                                className="h-full w-full object-cover"
+                                            />
                                         ) : (
                                             user?.name ? user.name.substring(0, 2).toUpperCase() : 'CO'
                                         )}

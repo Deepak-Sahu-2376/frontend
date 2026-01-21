@@ -278,7 +278,14 @@ const UserProfile = () => {
                             <div className="flex flex-col items-center -mt-16 mb-4 sm:mb-0 sm:mr-6">
                                 <div className="h-32 w-32 rounded-full border-4 border-white bg-white shadow-lg flex items-center justify-center text-4xl font-bold text-orange-600 overflow-hidden relative">
                                     {profileData.profileImageUrl ? (
-                                        <img src={profileData.profileImageUrl} alt="Profile" className="h-full w-full object-cover" />
+                                        <img
+                                            src={profileData.profileImageUrl.startsWith('http')
+                                                ? profileData.profileImageUrl
+                                                : `${import.meta.env.VITE_API_BASE_URL || ''}${profileData.profileImageUrl}`
+                                            }
+                                            alt="Profile"
+                                            className="h-full w-full object-cover"
+                                        />
                                     ) : (
                                         profileData.initials || <User className="h-16 w-16 text-gray-400" />
                                     )}
