@@ -150,12 +150,16 @@ export function SignUpPage() {
   useEffect(() => {
     if (formData.agentType === 'COMPANY' && selectedRole === 'agent') {
       const fetchCompanies = async () => {
+        console.warn("Fetching companies...");
         setFetchingCompanies(true);
         try {
           const response = await fetch(`${API_BASE_URL}/api/v1/companies/dropdown`);
+          console.warn("Fetch companies response status:", response.status);
           if (response.ok) {
             const data = await response.json();
+            console.warn("Fetch companies data:", data);
             const companiesList = Array.isArray(data) ? data : (data.data || []);
+            console.warn("Processed companies list:", companiesList);
             setCompanies(companiesList);
           } else {
             console.error('Failed to fetch companies');
@@ -648,7 +652,7 @@ export function SignUpPage() {
           const requiredFields = [
             "address", "city", "state", "country", "pincode",
             "specialization", "experienceYears", "bio",
-            "licenseState", "agentType"
+            "dateOfBirth", "agentType"
           ];
           const missing = requiredFields.filter(f => !formData[f]);
           if (missing.length > 0) {
@@ -657,18 +661,7 @@ export function SignUpPage() {
             return;
           }
 
-          setAgentRegistrationStep(3);
-          setLoading(false);
-          return;
-        }
-
-        if (agentRegistrationStep === 3) {
-          if (!formData.documentFile) {
-            toast.error("Please upload the required document");
-            setLoading(false);
-            return;
-          }
-
+          // Registration Logic (Moved from Step 3)
           const agentPayload = {
             firstName: formData.firstName,
             lastName: formData.lastName,
@@ -694,9 +687,7 @@ export function SignUpPage() {
               ? formData.languages.split(',').map(s => s.trim()).filter(Boolean)
               : formData.languages,
 
-            licenseNumber: formData.licenseNumber,
-            licenseState: formData.licenseState,
-            licenseExpiryDate: formData.licenseExpiryDate,
+            dob: formData.dateOfBirth,
 
             agentType: formData.agentType === 'COMPANY' ? 'COMPANY_AGENT' : formData.agentType,
 
@@ -720,25 +711,21 @@ export function SignUpPage() {
 
             const loginSuccess = await login(formData.email, formData.password);
             if (loginSuccess) {
-              const token = localStorage.getItem("accessToken");
-              if (token && formData.documentFile) {
-                const uploadResult = await uploadDocument(token, formData.documentFile);
-                if (uploadResult.success) {
-                  toast.success("Document uploaded successfully!");
-                } else {
-                  toast.error("Agent registered, but document upload failed: " + uploadResult.message);
-                }
-              }
+              // Success - redirect handled by login or here
+              toast.success("Welcome aboard!");
             } else {
-              toast.error("Agent registered, but auto-login failed. Please sign in to upload document.");
+              toast.error("Agent registered, but auto-login failed. Please sign in.");
             }
-            navigate('/sign-in');
+            navigate('/sign-in'); // Or home if auto-login
           } else {
             toast.error(result.message || "Registration failed");
           }
           setLoading(false);
           return;
         }
+
+        // Step 3 removed for Agent
+
       }
 
       const requiredFields = ["email", "password", "phone"];
@@ -985,33 +972,14 @@ export function SignUpPage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="licenseNumber">License Number</Label>
+                      <Label htmlFor="dateOfBirth">Date of Birth</Label>
                       <Input
-                        id="licenseNumber"
-                        placeholder="DL-AGT-12345"
-                        value={formData.licenseNumber}
-                        onChange={(e) => handleInputChange("licenseNumber", e.target.value)}
+                        id="dateOfBirth"
+                        type="date"
+                        value={formData.dateOfBirth}
+                        onChange={(e) => handleInputChange("dateOfBirth", e.target.value)}
                       />
                     </div>
-                    <div>
-                      <Label htmlFor="licenseState">License State</Label>
-                      <Input
-                        id="licenseState"
-                        placeholder="Delhi"
-                        value={formData.licenseState}
-                        onChange={(e) => handleInputChange("licenseState", e.target.value)}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="licenseExpiryDate">License Expiry Date</Label>
-                    <Input
-                      id="licenseExpiryDate"
-                      type="date"
-                      value={formData.licenseExpiryDate}
-                      onChange={(e) => handleInputChange("licenseExpiryDate", e.target.value)}
-                    />
                   </div>
 
                   <div>
@@ -1094,50 +1062,7 @@ export function SignUpPage() {
               </>
             )}
 
-            {agentRegistrationStep === 3 && (
-              <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-gray-700">Step 3: Document Upload</h3>
-                <div>
-                  <Label htmlFor="documentType">Document Type <span className="text-red-500">*</span></Label>
-                  <Select
-                    value={formData.documentType}
-                    onValueChange={(value) => handleInputChange("documentType", value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select document type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="PAN_CARD">PAN Card</SelectItem>
-                      <SelectItem value="AADHAAR_CARD">Aadhaar Card</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor="documentDescription">Document Description <span className="text-red-500">*</span></Label>
-                  <Input
-                    id="documentDescription"
-                    placeholder="e.g. RERA Certificate"
-                    value={formData.documentDescription}
-                    onChange={(e) => handleInputChange("documentDescription", e.target.value)}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="documentFile">Upload Document <span className="text-red-500">*</span></Label>
-                  <Input
-                    id="documentFile"
-                    type="file"
-                    onChange={(e) => {
-                      const file = e.target.files[0];
-                      setFormData(prev => ({ ...prev, documentFile: file }));
-                    }}
-                    className="cursor-pointer"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Supported formats: PDF, JPG, PNG</p>
-                </div>
-              </div>
-            )}
+            {/* Step 3 Removed for Agent */}
           </>
         );
       case "company":
