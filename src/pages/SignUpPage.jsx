@@ -551,24 +551,7 @@ export function SignUpPage() {
             return;
           }
 
-          setCompanyRegistrationStep(3);
-          setLoading(false);
-          return;
-        }
-
-        if (companyRegistrationStep === 3) {
-          if (!formData.documentFile) {
-            toast.error("Please upload the required document");
-            setLoading(false);
-            return;
-          }
-
-          if (!formData.documentDescription) {
-            toast.error("Please provide a description for the document");
-            setLoading(false);
-            return;
-          }
-
+          // Proceed to complete registration directly
           const result = await verifyCompanyRegistration(formData, otpCode);
 
           if (result.success) {
@@ -577,27 +560,20 @@ export function SignUpPage() {
             const loginSuccess = await login(formData.email, formData.password);
 
             if (loginSuccess) {
-              const token = localStorage.getItem("accessToken");
-              if (token && formData.documentFile) {
-                const uploadResult = await uploadDocument(token, formData.documentFile);
-                if (uploadResult.success) {
-                  toast.success("Document uploaded successfully!");
-                } else {
-                  toast.error("Company registered, but document upload failed: " + uploadResult.message);
-                }
-              }
+              navigate('/sign-in'); // Redirect user after successful registration
             } else {
               console.error("Auto-login failed after registration");
-              toast.error("Company registered, but could not log in to upload document. Please sign in manually.");
+              toast.error("Company registered, but could not log in. Please sign in manually.");
+              navigate('/sign-in');
             }
-
-            navigate('/sign-in');
           } else {
             toast.error(result.message || "Registration failed");
           }
           setLoading(false);
           return;
         }
+
+
       }
 
       if (selectedRole === "agent") {
@@ -1175,36 +1151,8 @@ export function SignUpPage() {
                       />
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="gstNumber">GST Number</Label>
-                      <Input
-                        id="gstNumber"
-                        placeholder="27AABCP1234F1Z5"
-                        value={formData.gstNumber}
-                        onChange={(e) => handleInputChange("gstNumber", e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="panNumber">PAN Number</Label>
-                      <Input
-                        id="panNumber"
-                        placeholder="ABCDE1234F"
-                        value={formData.panNumber}
-                        onChange={(e) => handleInputChange("panNumber", e.target.value)}
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <Label htmlFor="website">Website</Label>
-                    <Input
-                      id="website"
-                      type="url"
-                      placeholder="https://www.example.com"
-                      value={formData.website}
-                      onChange={(e) => handleInputChange("website", e.target.value)}
-                    />
-                  </div>
+
+
                 </div>
 
                 <Separator className="my-6" />
@@ -1300,39 +1248,7 @@ export function SignUpPage() {
                   </div>
                 </div>
 
-                <Separator className="my-6" />
-                <div className="space-y-4">
-                  <h3 className="text-sm font-semibold text-gray-700">License Information</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="licenseNumber">License Number</Label>
-                      <Input
-                        id="licenseNumber"
-                        placeholder="LIC123456"
-                        value={formData.licenseNumber}
-                        onChange={(e) => handleInputChange("licenseNumber", e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="licenseAuthority">License Authority</Label>
-                      <Input
-                        id="licenseAuthority"
-                        placeholder="RERA"
-                        value={formData.licenseAuthority}
-                        onChange={(e) => handleInputChange("licenseAuthority", e.target.value)}
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <Label htmlFor="licenseExpiryDate">License Expiry Date</Label>
-                    <Input
-                      id="licenseExpiryDate"
-                      type="date"
-                      value={formData.licenseExpiryDate}
-                      onChange={(e) => handleInputChange("licenseExpiryDate", e.target.value)}
-                    />
-                  </div>
-                </div>
+
 
                 <Separator className="my-6" />
                 <div className="space-y-4">
@@ -1403,52 +1319,7 @@ export function SignUpPage() {
               </>
             )}
 
-            {companyRegistrationStep === 3 && (
-              <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-gray-700">Step 3: Document Upload</h3>
-                <div>
-                  <Label htmlFor="documentType">Document Type <span className="text-red-500">*</span></Label>
-                  <Select
-                    value={formData.documentType}
-                    onValueChange={(value) => handleInputChange("documentType", value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select document type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="GST_CERTIFICATE">GST Certificate</SelectItem>
-                      <SelectItem value="PAN_CARD">PAN Card</SelectItem>
-                      <SelectItem value="INCORPORATION_CERTIFICATE">Incorporation Certificate</SelectItem>
-                      <SelectItem value="RERA_CERTIFICATE">RERA Certificate</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
 
-                <div>
-                  <Label htmlFor="documentDescription">Document Description <span className="text-red-500">*</span></Label>
-                  <Input
-                    id="documentDescription"
-                    placeholder="e.g. GST Certificate for FY 2024-25"
-                    value={formData.documentDescription}
-                    onChange={(e) => handleInputChange("documentDescription", e.target.value)}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="documentFile">Upload Document <span className="text-red-500">*</span></Label>
-                  <Input
-                    id="documentFile"
-                    type="file"
-                    onChange={(e) => {
-                      const file = e.target.files[0];
-                      setFormData(prev => ({ ...prev, documentFile: file }));
-                    }}
-                    className="cursor-pointer"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Supported formats: PDF, JPG, PNG</p>
-                </div>
-              </div>
-            )}
           </>
         );
     }
