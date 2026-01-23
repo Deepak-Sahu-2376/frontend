@@ -181,9 +181,18 @@ const Navbar = () => {
 
           {/* Desktop Action Buttons */}
           <div className="hidden md:flex items-center space-x-3">
-            {user?.userType === 'AGENT' && (
+            {(user?.userType === 'AGENT' || user?.userType === 'company_agent') && (
               <Link
                 to="/agent/properties/create"
+                className={`px-4 py-2 bg-white border border-[#A17F5A] hover:bg-[#A17F5A] text-[#A17F5A] hover:text-white text-sm font-medium transition-all duration-500 ease-in-out ${isScrolled ? 'rounded-full' : 'rounded-md'}`}
+              >
+                + Post Property
+              </Link>
+            )}
+
+            {user?.userType === 'BUYER' && (
+              <Link
+                to="/buyer/post-property"
                 className={`px-4 py-2 bg-white border border-[#A17F5A] hover:bg-[#A17F5A] text-[#A17F5A] hover:text-white text-sm font-medium transition-all duration-500 ease-in-out ${isScrolled ? 'rounded-full' : 'rounded-md'}`}
               >
                 + Post Property
@@ -319,9 +328,18 @@ const Navbar = () => {
 
                   <div className="h-px bg-gray-200 my-4" />
 
-                  {user?.userType === 'AGENT' && (
+                  {(user?.userType === 'AGENT' || user?.userType === 'company_agent') && (
                     <Link
                       to="/agent/properties/create"
+                      className="text-lg font-medium text-gray-600 hover:text-orange-600"
+                    >
+                      + Post Property
+                    </Link>
+                  )}
+
+                  {user?.userType === 'BUYER' && (
+                    <Link
+                      to="/buyer/post-property"
                       className="text-lg font-medium text-gray-600 hover:text-orange-600"
                     >
                       + Post Property

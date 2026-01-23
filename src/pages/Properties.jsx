@@ -433,7 +433,9 @@ const Properties = () => {
                     <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end">
                       <div className="text-white">
                         <p className="text-xl md:text-2xl font-bold drop-shadow-md">
-                          {formatPrice(property.basePrice)}
+                          {['RENT', 'PG', 'COMMERCIAL_RENT'].includes(property.listingType)
+                            ? (property.monthlyRent ? `${formatPrice(property.monthlyRent)}/mo` : 'Price on Request')
+                            : formatPrice(property.basePrice)}
                         </p>
                       </div>
                     </div>

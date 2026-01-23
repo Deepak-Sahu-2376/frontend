@@ -53,6 +53,7 @@ const AdminInquiries = lazy(() => import('./pages/admin/AdminInquiries'));
 const AgentInquiries = lazy(() => import('./pages/agent/AgentInquiries'));
 const CompanyLayout = lazy(() => import('./pages/company/CompanyLayout'));
 const AgentLayout = lazy(() => import('./pages/agent/AgentLayout'));
+const BuyerCreateProperty = lazy(() => import('./pages/BuyerCreateProperty'));
 
 // Company Pages
 const CompanyDashboard = lazy(() => import('./pages/company/CompanyDashboard'));
@@ -177,7 +178,11 @@ function App() {
 
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
-                <Route path="/post-property" element={<h1>Post Property Page</h1>} />
+                <Route path="/buyer/post-property" element={
+                  <SessionTimeoutWrapper>
+                    <BuyerCreateProperty />
+                  </SessionTimeoutWrapper>
+                } />
                 <Route path="/sign-in" element={<SignInPage />} />
                 <Route path="/sign-up" element={<SignUpPage />} />
                 <Route path="/buyer/signup" element={<SignUpPage />} />

@@ -189,30 +189,39 @@ const AdminPendingProperties = () => {
                                     </div>
                                     <CardDescription className="flex items-center gap-1.5 text-xs text-gray-500">
                                         <MapPin className="h-3.5 w-3.5 shrink-0" />
-                                        <span className="truncate">{property.formattedAddress}</span>
+                                        <span className="truncate">
+                                            {property.formattedAddress ||
+                                                (property.city ? `${property.address}, ${property.city}` : property.address) ||
+                                                'Address not available'}
+                                        </span>
                                     </CardDescription>
                                 </CardHeader>
 
                                 <CardContent className="p-4 pt-2 space-y-4 flex-1">
                                     <div className="flex items-baseline gap-1">
                                         <span className="text-xl font-bold text-orange-600">
-                                            ₹{property.basePrice?.toLocaleString()}
+                                            ₹{(property.listingType === 'RENT' || property.listingType === 'PG' || property.listingType === 'COMMERCIAL_RENT')
+                                                ? (property.monthlyRent?.toLocaleString() || '0')
+                                                : (property.basePrice?.toLocaleString() || '0')}
                                         </span>
-                                        {property.listingType === 'RENT' && <span className="text-sm text-gray-500">/mo</span>}
+                                        {(property.listingType === 'RENT' || property.listingType === 'PG' || property.listingType === 'COMMERCIAL_RENT') && <span className="text-sm text-gray-500">/mo</span>}
                                     </div>
 
                                     <div className="grid grid-cols-3 gap-2 text-xs text-gray-600 py-3 border-y border-gray-100">
                                         <div className="flex flex-col items-center gap-1">
                                             <BedDouble className="h-4 w-4 text-gray-400" />
-                                            <span className="font-medium">{property.bedrooms} Beds</span>
+                                            <span className="font-medium">{property.bedrooms || 0} Beds</span>
                                         </div>
                                         <div className="flex flex-col items-center gap-1 border-l border-gray-100">
                                             <Bath className="h-4 w-4 text-gray-400" />
-                                            <span className="font-medium">{property.bathrooms} Baths</span>
+                                            <span className="font-medium">{property.bathrooms || 0} Baths</span>
                                         </div>
                                         <div className="flex flex-col items-center gap-1 border-l border-gray-100">
                                             <Ruler className="h-4 w-4 text-gray-400" />
-                                            <span className="font-medium">{property.formattedArea}</span>
+                                            <span className="font-medium">
+                                                {property.formattedArea ||
+                                                    (property.carpetArea ? `${property.carpetArea} sqft` : 'N/A')}
+                                            </span>
                                         </div>
                                     </div>
 

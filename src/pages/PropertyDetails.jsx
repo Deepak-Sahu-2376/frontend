@@ -163,7 +163,7 @@ const PropertyDetails = () => {
                         ...data,
                         media: media,
                         amenitiesList: amenitiesList,
-                        formattedPrice: formatPrice(data.basePrice),
+                        formattedPrice: formatPrice(data.basePrice, data.listingType, data.monthlyRent),
                         videoUrl: getImageUrl(data.videoUrl || data.video),
                         floorPlan: getImageUrl(data.floorPlan),
 
@@ -226,7 +226,10 @@ const PropertyDetails = () => {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [activeMediaIndex, showNext, showPrev]);
 
-    const formatPrice = (price) => {
+    const formatPrice = (price, type, rent) => {
+        if (type === 'RENT' || type === 'PG' || type === 'COMMERCIAL_RENT') {
+            return rent ? `₹${rent.toLocaleString()}/mo` : 'Price on Request';
+        }
         if (!price) return 'Price on Request';
         if (price >= 10000000) return `₹${(price / 10000000).toFixed(2)} Cr`;
         if (price >= 100000) return `₹${(price / 100000).toFixed(2)} L`;
@@ -481,25 +484,19 @@ const PropertyDetails = () => {
                             </div>
                         )}
 
-                        {/* Location Map */}
-                        <div className="py-8 border-t border-gray-100">
-                            <h2 className="text-2xl font-bold text-gray-900 mb-6">Location</h2>
-                            <div className="bg-gray-100 h-[400px] rounded-2xl overflow-hidden mb-6 relative border border-gray-200">
-                                {property.latitude && property.longitude ? (
+                        {/* Location Map - Only show if coordinates exist */}
+                        {property.latitude && property.longitude && (
+                            <div className="py-8 border-t border-gray-100">
+                                <h2 className="text-2xl font-bold text-gray-900 mb-6">Location</h2>
+                                <div className="bg-gray-100 h-[400px] rounded-2xl overflow-hidden mb-6 relative border border-gray-200">
                                     <MapComponent
                                         latitude={property.latitude}
                                         longitude={property.longitude}
                                         title={property.title}
                                     />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center flex-col gap-2 bg-slate-50">
-                                        <MapPin className="w-10 h-10 text-gray-300" />
-                                        <p className="text-gray-500 font-medium">Map view unavailable for this address</p>
-                                        <p className="text-sm text-gray-400">{property.formattedAddress}</p>
-                                    </div>
-                                )}
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                     </div>
 

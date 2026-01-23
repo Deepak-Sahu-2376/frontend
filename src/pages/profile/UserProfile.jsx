@@ -22,7 +22,8 @@ import {
     Bell,
     Camera,
     Trash2,
-    AlertCircle
+    AlertCircle,
+    Building2
 } from 'lucide-react';
 import { api } from '../../utils/apiClient';
 import {
@@ -37,7 +38,7 @@ import { Label } from "../../components/ui/label";
 import { Textarea } from "../../components/ui/textarea";
 
 const UserProfile = () => {
-    const { user: contextUser, uploadProfileImage, deleteProfileImage, fetchMyVisits, cancelVisit, fetchUserProfile } = useUser();
+    const { user: contextUser, uploadProfileImage, deleteProfileImage, fetchMyVisits, fetchMyProperties, cancelVisit, fetchUserProfile } = useUser();
     const [profileData, setProfileData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -51,11 +52,24 @@ const UserProfile = () => {
     const [cancelReason, setCancelReason] = useState("");
     const [cancelling, setCancelling] = useState(false);
 
+    const [myProperties, setMyProperties] = useState([]);
+    const [loadingProperties, setLoadingProperties] = useState(false);
+
     useEffect(() => {
         if (contextUser?.userType === 'BUYER' || contextUser?.roles?.includes('BUYER')) {
             loadVisits();
+            loadMyProperties();
         }
     }, [contextUser]);
+
+    const loadMyProperties = async () => {
+        setLoadingProperties(true);
+        const result = await fetchMyProperties();
+        if (result.success && result.data) {
+            setMyProperties(result.data.content || []);
+        }
+        setLoadingProperties(false);
+    };
 
     const loadVisits = async () => {
         setLoadingVisits(true);
@@ -415,6 +429,71 @@ const UserProfile = () => {
                                     <p className="text-gray-500">No visits booked yet.</p>
                                     <Button variant="link" className="text-orange-600 mt-2" onClick={() => navigate('/properties')}>
                                         Browse Properties
+                                    </Button>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                )}
+
+                {/* My Listed Properties Section - For Buyers (and Agents/Owners viewing their profile) */}
+                {(contextUser?.userType === 'BUYER' || contextUser?.userType === 'AGENT') && (
+                    <Card className="border-none shadow-md">
+                        <CardHeader>
+                            <CardTitle className="text-xl font-bold flex items-center gap-2">
+                                <Building2 className="h-5 w-5 text-orange-600" />
+                                My Listed Properties
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            {loadingProperties ? (
+                                <div className="flex justify-center py-8">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-orange-500"></div>
+                                </div>
+                            ) : myProperties.length > 0 ? (
+                                <div className="space-y-4">
+                                    {myProperties.map((property) => (
+                                        <div key={property.id} className="flex flex-col sm:flex-row items-center justify-between p-4 border rounded-lg bg-white hover:shadow-md transition-shadow">
+                                            <div className="flex items-center gap-4 mb-2 sm:mb-0 w-full sm:w-auto">
+                                                <div className="h-16 w-16 bg-gray-100 rounded-md overflow-hidden flex-shrink-0">
+                                                    {property.primaryImageUrl || property.images?.[0] ? (
+                                                        <img
+                                                            src={property.primaryImageUrl?.startsWith('http') ? property.primaryImageUrl : `${import.meta.env.VITE_API_BASE_URL}${property.primaryImageUrl || property.images?.[0]}`}
+                                                            alt={property.title}
+                                                            className="h-full w-full object-cover"
+                                                        />
+                                                    ) : (
+                                                        <Building2 className="h-8 w-8 text-gray-400 m-auto mt-4" />
+                                                    )}
+                                                </div>
+                                                <div>
+                                                    <h4 className="font-semibold text-gray-900 line-clamp-1">{property.title}</h4>
+                                                    <p className="text-sm text-gray-500">{property.formattedAddress || property.address}</p>
+                                                    <p className="text-sm font-medium text-orange-600 mt-1">
+                                                        {property.listingType === 'RENT'
+                                                            ? `₹${property.monthlyRent?.toLocaleString() || 0}/mo`
+                                                            : `₹${property.basePrice?.toLocaleString() || 0}`}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2 w-full sm:w-auto justify-end mt-2 sm:mt-0">
+                                                <Badge className={
+                                                    property.status === 'APPROVED' || property.status === 'VERIFIED' ? 'bg-green-100 text-green-700 hover:bg-green-200 border-green-200' :
+                                                        property.status === 'REJECTED' ? 'bg-red-100 text-red-700 hover:bg-red-200 border-red-200' :
+                                                            'bg-yellow-100 text-yellow-700 hover:bg-yellow-200 border-yellow-200'
+                                                }>
+                                                    {property.status || 'PENDING'}
+                                                </Badge>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-8 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                                    <Building2 className="h-10 w-10 text-gray-300 mx-auto mb-2" />
+                                    <p className="text-gray-500">You haven't listed any properties yet.</p>
+                                    <Button variant="link" className="text-orange-600 mt-2" onClick={() => navigate('/buyer/post-property')}>
+                                        Post a Property
                                     </Button>
                                 </div>
                             )}

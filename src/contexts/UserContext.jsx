@@ -490,6 +490,31 @@ export function UserProvider({ children }) {
 
   const isFavorite = (propertyId) => favorites.includes(propertyId);
 
+  const fetchMyProperties = async (page = 0, size = 10) => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      if (!token) return { success: false, message: "No token found" };
+      if (!user?.id) return { success: false, message: "User not identified" };
+
+      // Reusing the agent endpoint as it allows fetching by userId for the owner
+      const response = await fetch(`${API_BASE_URL}/api/v1/properties/agent/${user.id}?page=${page}&size=${size}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
+      });
+
+      const result = await response.json();
+      if (response.ok) {
+        return { success: true, data: result.data }; // structured as { content: [], ... }
+      }
+      return { success: false, message: result.message || "Failed to fetch properties" };
+    } catch (error) {
+      console.error("Error fetching properties:", error);
+      return { success: false, message: "Network error" };
+    }
+  };
+
   const fetchMyVisits = async (page = 0, size = 10) => {
     try {
       const token = localStorage.getItem("accessToken");
@@ -568,6 +593,7 @@ export function UserProvider({ children }) {
         uploadProfileImage,
         deleteProfileImage,
         fetchMyVisits,
+        fetchMyProperties,
         cancelVisit,
       }}
     >

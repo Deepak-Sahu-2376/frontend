@@ -20,26 +20,58 @@ const defaultProperty = {
 };
 
 const PropertyCard = ({ property = defaultProperty }) => {
+  const {
+    id,
+    title,
+    basePrice,
+    monthlyRent,
+    listingType,
+    address,
+    city,
+    formattedAddress,
+    images,
+    primaryImageUrl,
+    bedrooms,
+    bathrooms,
+    carpetArea,
+    formattedArea,
+    verificationStatus
+  } = property;
+
+  // Determine display price
+  const displayPrice = (listingType === 'RENT' || listingType === 'PG' || listingType === 'COMMERCIAL_RENT')
+    ? (monthlyRent ? `₹${monthlyRent.toLocaleString()}/mo` : 'Price on Request')
+    : (basePrice ? `₹${basePrice.toLocaleString()}` : 'Price on Request');
+
+  // Determine display location
+  const displayLocation = formattedAddress || (city ? `${address}, ${city}` : address) || 'Location Unavailable';
+
+  // Determine display image
+  const displayImage = primaryImageUrl?.startsWith('http')
+    ? primaryImageUrl
+    : (primaryImageUrl || (images && images.length > 0 ? images[0] : null)
+      ? `${import.meta.env.VITE_API_BASE_URL || ''}${primaryImageUrl || images[0]}`
+      : '/placeholder-property.jpg');
+  // fallback if no image
+
   return (
     // Card Container
-    <div className="bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden w-full">
+    <div className="bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden w-full flex flex-col h-full group">
 
       {/* Property Image and Tags */}
-      <div className="relative h-48">
+      <div className="relative h-48 shrink-0 overflow-hidden">
         {/* Placeholder for the image */}
         <img
-          src={property.image}
-          alt={property.title}
-          className="w-full h-full object-cover"
+          src={displayImage}
+          alt={title}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
 
-        {/* Tag (e.g., Premium Collection) */}
-        {property.tag && (
-          <span className={`absolute top-3 left-3 px-3 py-1 text-xs font-semibold rounded-full text-white ${property.tag === 'Premium Collection' ? 'bg-blue-600' : 'bg-red-600'
-            }`}>
-            {property.tag}
-          </span>
-        )}
+        {/* Tag (e.g., Listing Type) */}
+        <span className={`absolute top-3 left-3 px-3 py-1 text-xs font-semibold rounded-full text-white ${listingType === 'RENT' ? 'bg-blue-600' : 'bg-orange-600'
+          }`}>
+          {listingType || 'SALE'}
+        </span>
 
         {/* Favorite Icon */}
         <button className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-md text-gray-500 hover:text-red-500 transition">
@@ -48,39 +80,41 @@ const PropertyCard = ({ property = defaultProperty }) => {
       </div>
 
       {/* Card Details */}
-      <div className="p-4">
+      <div className="p-4 flex flex-col flex-1">
 
         {/* Price and Rating */}
         <div className="flex justify-between items-start mb-2">
-          <h3 className="text-xl font-bold  text-orange-600">
-            {property.price}
+          <h3 className="text-xl font-bold text-orange-600">
+            {displayPrice}
           </h3>
-          <div className="flex items-center text-sm text-gray-600">
+          {/* Rating placeholder or if available in future */}
+          {/* <div className="flex items-center text-sm text-gray-600">
             <span className="text-yellow-500 mr-1">★</span>
-            {property.rating} ({property.reviews})
-          </div>
+            4.8 (18)
+          </div> */}
         </div>
 
         {/* Title and Location */}
-        <h4 className="text-lg font-semibold text-gray-800 truncate mb-1">
-          {property.title}
+        <h4 className="text-lg font-semibold text-gray-800 truncate mb-1" title={title}>
+          {title}
         </h4>
-        <p className="text-sm text-gray-500 flex items-center mb-4">
-          <span className="mr-1">📍</span> {property.location}
+        <p className="text-sm text-gray-500 flex items-center mb-4 truncate">
+          <span className="mr-1 shrink-0">📍</span>
+          <span className="truncate">{displayLocation}</span>
         </p>
 
         {/* Key Specifications (Beds, Baths, Sqft) */}
-        <div className="flex justify-between border-t border-b border-gray-100 py-3 text-sm text-gray-600">
+        <div className="flex justify-between border-t border-b border-gray-100 py-3 text-sm text-gray-600 mt-auto">
           <div className="flex items-center space-x-1">
-            <span className="font-semibold">{property.beds}</span>
+            <span className="font-semibold">{bedrooms || '-'}</span>
             <span>Beds</span>
           </div>
           <div className="flex items-center space-x-1">
-            <span className="font-semibold">{property.baths}</span>
+            <span className="font-semibold">{bathrooms || '-'}</span>
             <span>Baths</span>
           </div>
           <div className="flex items-center space-x-1">
-            <span className="font-semibold">{property.sqft.toLocaleString()}</span>
+            <span className="font-semibold">{formattedArea || carpetArea || '-'}</span>
             <span>sq ft</span>
           </div>
         </div>
@@ -88,7 +122,7 @@ const PropertyCard = ({ property = defaultProperty }) => {
         {/* Actions */}
         <div className="flex justify-between space-x-2 mt-4">
           <Link
-            to={`/properties/${property.id}`}
+            to={`/properties/${id}`}
             className="flex-grow text-center py-2 text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 rounded-md transition duration-200"
           >
             View Details
