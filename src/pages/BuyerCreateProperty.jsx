@@ -5,6 +5,7 @@ import { Loader2, Upload, X, Building2, MapPin, CheckSquare, Image as ImageIcon,
 import EnhancedTagInput from '../components/ui/EnhancedTagInput';
 import { Button } from '../components/ui/button';
 import { useUser } from '../contexts/UserContext';
+import { API_BASE_URL } from '../config';
 import Footer from '../components/Footer';
 
 const PROPERTY_TYPES = [
@@ -139,7 +140,7 @@ const BuyerCreateProperty = () => {
             }
 
             // Use relative URL to leverage Vite proxy and avoid CORS/Network issues
-            const response = await fetch(`/api/v1/properties/create`, {
+            const response = await fetch(`${API_BASE_URL}/api/v1/properties/create`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
