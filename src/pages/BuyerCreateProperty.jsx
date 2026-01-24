@@ -5,8 +5,8 @@ import { Loader2, Upload, X, Building2, MapPin, CheckSquare, Image as ImageIcon,
 import EnhancedTagInput from '../components/ui/EnhancedTagInput';
 import { Button } from '../components/ui/button';
 import { useUser } from '../contexts/UserContext';
-import { API_BASE_URL } from '../config';
 import Footer from '../components/Footer';
+import { API_BASE_URL } from '../utils/apiClient';
 
 const PROPERTY_TYPES = [
     { value: 'APARTMENT', label: 'Apartment' },
@@ -139,7 +139,7 @@ const BuyerCreateProperty = () => {
                 submitFormData.append('video', video);
             }
 
-            // Use relative URL to leverage Vite proxy and avoid CORS/Network issues
+            // Use absolute URL from env config
             const response = await fetch(`${API_BASE_URL}/api/v1/properties/create`, {
                 method: 'POST',
                 headers: {
