@@ -4,7 +4,7 @@ import { useAdmin } from '../../contexts/AdminContext';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import DeleteConfirmationDialog from '../../components/admin/DeleteConfirmationDialog';
+import DeleteConfirmationDialog from './DeleteConfirmationDialog';
 
 const AdminProperties = () => {
     const navigate = useNavigate();
