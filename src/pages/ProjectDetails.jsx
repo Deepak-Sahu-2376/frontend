@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
     Share2, Heart, ArrowLeft, MapPin, CheckCircle2,
@@ -18,6 +18,7 @@ import MapComponent from '../components/MapComponent';
 import ContactAgentForm from '../components/ContactAgentForm';
 import { API_BASE_URL } from '../utils/apiClient';
 import { getImageUrl } from '../utils/imageHelper';
+import { useProjectDetails } from '../hooks/useProperties';
 
 
 // Amenity icon mapping (Comprehensive)
@@ -113,111 +114,99 @@ const ProjectDetails = () => {
     const navigate = useNavigate();
     const [activeMediaIndex, setActiveMediaIndex] = useState(null);
     const [previewIndex, setPreviewIndex] = useState(0);
-    const [project, setProject] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
     const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+    // Use cached data hook
+    const { data: rawData, isLoading: loading, error: queryError } = useProjectDetails(id);
+    const error = queryError ? (queryError.message || 'Failed to load project') : null;
 
-    useEffect(() => {
-        const fetchProjectDetails = async () => {
-            setPreviewIndex(0);
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/v1/properties/projects/${id}`);
-                const result = await response.json();
+    // Transform data when rawData changes
+    const project = useMemo(() => {
+        if (!rawData) return null;
+        const data = rawData;
 
-                if (result.success) {
-                    const data = result.data;
-
-
-
-                    // Parse location advantages if it's a string
-                    let highlights = [];
-                    try {
-                        if (typeof data.locationAdvantages === 'string') {
-                            const cleanString = data.locationAdvantages.replace(/^\[|\]$/g, '');
-                            highlights = cleanString.split(',').map(s => s.trim()).filter(Boolean);
-                        } else if (Array.isArray(data.locationAdvantages)) {
-                            highlights = data.locationAdvantages;
-                        }
-                    } catch (e) {
-                        console.error("Error parsing location advantages", e);
-                        highlights = [data.locationAdvantages];
-                    }
-
-                    // Map media files
-                    const media = data.mediaFiles
-                        ?.filter(file => ['IMAGE', 'VIDEO'].includes(file.type))
-                        .map(file => ({
-                            type: file.type === 'VIDEO' ? 'video' : 'image',
-                            url: getImageUrl(file.mediaUrl),
-                            thumbnail: file.type === 'VIDEO' ? getImageUrl(file.mediaUrl) : undefined,
-                            label: file.categoryLabel || file.category
-                        })) || [];
-
-                    // If no media, add a placeholder
-                    if (media.length === 0) {
-                        media.push({
-                            type: 'image',
-                            url: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200&auto=format&fit=crop&q=80',
-                            label: 'Cover Image'
-                        });
-                    }
-
-                    // Map amenities with icons
-                    const amenities = data.amenities?.map(amenity => ({
-                        icon: getAmenityIcon(typeof amenity === 'string' ? amenity : amenity.name),
-                        label: (typeof amenity === 'string' ? amenity : amenity.name || '').replace(/_/g, ' ')
-                    })) || [];
-
-                    // Process Phases Images
-                    if (data.phases) {
-                        data.phases = data.phases.map(p => ({
-                            ...p,
-                            phaseLogoUrl: getImageUrl(p.phaseLogoUrl)
-                        }));
-                    }
-
-                    // Derive unit configurations
-                    const unitTypes = data.phases?.flatMap(phase =>
-                        phase.specifications ? [{
-                            id: phase.id || phase.phaseId,
-                            type: `Phase ${phase.phaseNumber}`,
-                            area: phase.carpetArea + ' sq.ft',
-                            price: phase.formattedPriceRange
-                        }] : []
-                    ) || [];
-
-                    setProject({
-                        ...data,
-                        developer: data.developerName || data.company?.companyName,
-                        address: data.formattedAddress || `${data.address}, ${data.city}, ${data.state}`,
-                        reraId: data.phases?.[0]?.reraNumber || (data.reraApproved ? "RERA Approved" : "Pending"),
-                        priceRange: data.formattedPriceRange,
-                        sizeRange: data.formattedArea,
-                        configurations: data.projectType,
-                        floors: data.totalFloors ? `G+${data.totalFloors}` : 'N/A',
-                        highlights: highlights,
-                        media: media,
-                        amenities: amenities,
-                        unitTypes: unitTypes,
-                        amenities: amenities,
-                        unitTypes: unitTypes,
-                        nearby: [],
-                        videoUrl: data.videoUrl || data.video || media.find(m => m.type === 'video')?.url
-                    });
-                } else {
-                    setError(result.message || 'Failed to fetch project details');
-                }
-            } catch (err) {
-                console.error('Error fetching project details:', err);
-                setError('An error occurred while fetching project details');
-            } finally {
-                setLoading(false);
+        // Parse location advantages if it's a string
+        let highlights = [];
+        try {
+            if (typeof data.locationAdvantages === 'string') {
+                const cleanString = data.locationAdvantages.replace(/^\[|\]$/g, '');
+                highlights = cleanString.split(',').map(s => s.trim()).filter(Boolean);
+            } else if (Array.isArray(data.locationAdvantages)) {
+                highlights = data.locationAdvantages;
             }
-        };
+        } catch (e) {
+            console.error("Error parsing location advantages", e);
+            highlights = [data.locationAdvantages];
+        }
 
-        fetchProjectDetails();
-    }, [id]);
+        // Map media files
+        const media = data.mediaFiles
+            ?.filter(file => ['IMAGE', 'VIDEO'].includes(file.type))
+            .map(file => ({
+                type: file.type === 'VIDEO' ? 'video' : 'image',
+                url: getImageUrl(file.mediaUrl),
+                thumbnail: file.type === 'VIDEO' ? getImageUrl(file.mediaUrl) : undefined,
+                label: file.categoryLabel || file.category
+            })) || [];
+
+        // If no media, add a placeholder
+        if (media.length === 0) {
+            media.push({
+                type: 'image',
+                url: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200&auto=format&fit=crop&q=80',
+                label: 'Cover Image'
+            });
+        }
+
+        // Map amenities with icons
+        const amenities = data.amenities?.map(amenity => ({
+            icon: getAmenityIcon(typeof amenity === 'string' ? amenity : amenity.name),
+            label: (typeof amenity === 'string' ? amenity : amenity.name || '').replace(/_/g, ' ')
+        })) || [];
+
+        // Process Phases Images
+        let processedPhases = [];
+        if (data.phases) {
+            processedPhases = data.phases.map(p => ({
+                ...p,
+                phaseLogoUrl: getImageUrl(p.phaseLogoUrl)
+            }));
+        }
+
+        // Derive unit configurations
+        const unitTypes = data.phases?.flatMap(phase =>
+            phase.specifications ? [{
+                id: phase.id || phase.phaseId,
+                type: `Phase ${phase.phaseNumber}`,
+                area: phase.carpetArea + ' sq.ft',
+                price: phase.formattedPriceRange
+            }] : []
+        ) || [];
+
+        return {
+            ...data,
+            phases: processedPhases,
+            developer: data.developerName || data.company?.companyName,
+            address: data.formattedAddress || `${data.address}, ${data.city}, ${data.state}`,
+            reraId: data.phases?.[0]?.reraNumber || (data.reraApproved ? "RERA Approved" : "Pending"),
+            priceRange: data.formattedPriceRange,
+            sizeRange: data.formattedArea,
+            configurations: data.projectType,
+            floors: data.totalFloors ? `G+${data.totalFloors}` : 'N/A',
+            highlights: highlights,
+            media: media,
+            amenities: amenities,
+            unitTypes: unitTypes,
+            nearby: [],
+            videoUrl: data.videoUrl || data.video || media.find(m => m.type === 'video')?.url
+        };
+    }, [rawData]);
+
+    // Reset preview index when project loads
+    useEffect(() => {
+        if (project) {
+            setPreviewIndex(0);
+        }
+    }, [project?.id]);
 
 
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
     Share2, Heart, ArrowLeft, MapPin, CheckCircle2,
@@ -21,6 +21,7 @@ import ScheduleVisitForm from '../components/ScheduleVisitForm';
 import { API_BASE_URL } from '../utils/apiClient';
 import { getImageUrl } from '../utils/imageHelper';
 import { toast } from 'sonner';
+import { usePropertyDetails } from '../hooks/useProperties';
 
 // Amenity icon mapping (Comprehensive)
 const amenityIcons = {
@@ -113,87 +114,71 @@ const getAmenityIcon = (name) => {
 const PropertyDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+
+    const formatPrice = (price) => {
+        if (!price) return 'Price on Request';
+        if (price >= 10000000) return `₹${(price / 10000000).toFixed(2)} Cr`;
+        if (price >= 100000) return `₹${(price / 100000).toFixed(2)} L`;
+        return `₹${price.toLocaleString()}`;
+    };
+
     const [activeMediaIndex, setActiveMediaIndex] = useState(null);
     const [previewIndex, setPreviewIndex] = useState(0);
-    const [property, setProperty] = useState(null);
-
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
     const [isContactModalOpen, setIsContactModalOpen] = useState(false);
     const [isVisitModalOpen, setIsVisitModalOpen] = useState(false);
+    // Use cached data hook
+    const { data: rawData, isLoading: loading, error: queryError } = usePropertyDetails(id);
+    const error = queryError ? (queryError.message || 'Failed to load property') : null;
 
-    useEffect(() => {
-        const fetchPropertyDetails = async () => {
-            setPreviewIndex(0);
-            try {
-                const token = localStorage.getItem('brickbroker_token');
-                const headers = {
-                    'Content-Type': 'application/json'
-                };
-                if (token) {
-                    headers['Authorization'] = `Bearer ${token}`;
-                }
+    // Transform data when rawData changes
+    const property = useMemo(() => {
+        if (!rawData) return null;
+        const data = rawData;
 
-                const response = await fetch(`${API_BASE_URL}/api/v1/public/properties/${id}`, {
-                    headers
-                });
-                const json = await response.json();
-                const data = json.data;
+        // Normalize data for UI
+        const media = (data.images || []).map((url, index) => ({
+            type: 'image',
+            url: getImageUrl(url),
+            label: `Image ${index + 1}`
+        })).filter(item => item.url);
 
-                if (response.ok && data) {
+        // Prepare amenities list
+        const amenitiesList = (data.amenities || []).map(amenityStr => ({
+            label: amenityStr,
+            icon: getAmenityIcon(amenityStr)
+        }));
 
+        // Calculated Fields
+        const daysSinceLastActivity = Math.floor((new Date() - new Date(data.updatedAt)) / (1000 * 60 * 60 * 24));
 
-                    // Normalize data for UI
-                    const media = (data.images || []).map((url, index) => ({
-                        type: 'image',
-                        url: getImageUrl(url),
-                        label: `Image ${index + 1}`
-                    })).filter(item => item.url);
+        return {
+            ...data,
+            media: media,
+            amenitiesList: amenitiesList,
+            formattedPrice: formatPrice(data.basePrice),
+            videoUrl: getImageUrl(data.videoUrl || data.video),
+            floorPlan: getImageUrl(data.floorPlan),
 
-                    // Prepare amenities list
-                    const amenitiesList = (data.amenities || []).map(amenityStr => ({
-                        label: amenityStr,
-                        icon: getAmenityIcon(amenityStr)
-                    }));
-
-                    // Calculated Fields
-                    const daysSinceLastActivity = Math.floor((new Date() - new Date(data.updatedAt)) / (1000 * 60 * 60 * 24));
-
-                    setProperty({
-                        ...data,
-                        media: media,
-                        amenitiesList: amenitiesList,
-                        formattedPrice: formatPrice(data.basePrice, data.listingType, data.monthlyRent),
-                        videoUrl: getImageUrl(data.videoUrl || data.video),
-                        floorPlan: getImageUrl(data.floorPlan),
-
-                        // Derived for UI
-                        configurationDisplay: data.bedrooms ? `${data.bedrooms} BHK` : 'Studio',
-                        formattedArea: `${data.superBuiltUpArea || data.builtUpArea || data.carpetArea || 0} sq.ft`,
-                        furnishingStatusDisplay: data.furnishingStatus?.replace(/_/g, ' ').toLowerCase(),
-                        parkingSummary: `${data.coveredParkingSpots || 0} Covered`,
-                        daysSinceLastActivity: daysSinceLastActivity,
-                        pricePerSqft: data.basePrice && (data.superBuiltUpArea || data.builtUpArea || data.carpetArea)
-                            ? Math.round(data.basePrice / (data.superBuiltUpArea || data.builtUpArea || data.carpetArea))
-                            : null,
-                        viewTypes: data.tower ? `Tower ${data.tower}` : 'Standard View',
-                        isVerified: data.status === 'APPROVED'
-                    });
-                } else {
-                    setError('Failed to load property details');
-                    toast.error("Failed to load property details");
-                }
-            } catch (err) {
-                console.error('Error fetching property details:', err);
-                setError('An error occurred while fetching property details');
-                toast.error("Network error");
-            } finally {
-                setLoading(false);
-            }
+            // Derived for UI
+            configurationDisplay: data.bedrooms ? `${data.bedrooms} BHK` : 'Studio',
+            formattedArea: `${data.superBuiltUpArea || data.builtUpArea || data.carpetArea || 0} sq.ft`,
+            furnishingStatusDisplay: data.furnishingStatus?.replace(/_/g, ' ').toLowerCase(),
+            parkingSummary: `${data.coveredParkingSpots || 0} Covered`,
+            daysSinceLastActivity: daysSinceLastActivity,
+            pricePerSqft: data.basePrice && (data.superBuiltUpArea || data.builtUpArea || data.carpetArea)
+                ? Math.round(data.basePrice / (data.superBuiltUpArea || data.builtUpArea || data.carpetArea))
+                : null,
+            viewTypes: data.tower ? `Tower ${data.tower}` : 'Standard View',
+            isVerified: data.status === 'APPROVED'
         };
+    }, [rawData]);
 
-        fetchPropertyDetails();
-    }, [id]);
+    // Reset preview index when property loads
+    useEffect(() => {
+        if (property) {
+            setPreviewIndex(0);
+        }
+    }, [property?.id]);
 
 
     // Lightbox Handlers
@@ -226,15 +211,7 @@ const PropertyDetails = () => {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [activeMediaIndex, showNext, showPrev]);
 
-    const formatPrice = (price, type, rent) => {
-        if (type === 'RENT' || type === 'PG' || type === 'COMMERCIAL_RENT') {
-            return rent ? `₹${rent.toLocaleString()}/mo` : 'Price on Request';
-        }
-        if (!price) return 'Price on Request';
-        if (price >= 10000000) return `₹${(price / 10000000).toFixed(2)} Cr`;
-        if (price >= 100000) return `₹${(price / 100000).toFixed(2)} L`;
-        return `₹${price.toLocaleString()}`;
-    };
+
 
     if (loading) {
         return (
@@ -302,9 +279,11 @@ const PropertyDetails = () => {
                                     <p className="text-3xl font-bold text-orange-600">
                                         {property.formattedPrice}
                                     </p>
-                                    <p className="text-sm text-gray-500">
-                                        {property.pricePerSqft ? `₹${property.pricePerSqft}/sq.ft` : 'Price on Request'}
-                                    </p>
+                                    {!['RENT', 'PG', 'PAYING_GUEST'].includes(property.listingType) && (
+                                        <p className="text-sm text-gray-500">
+                                            {property.pricePerSqft ? `₹${property.pricePerSqft}/sq.ft` : 'Price on Request'}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -315,20 +294,24 @@ const PropertyDetails = () => {
                 {/* Image Gallery - Main + Thumbnails */}
                 <div className="flex flex-col gap-4 mb-12">
                     {/* Main Active Image */}
-                    <div
-                        className="active-image-container w-full h-[400px] md:h-[600px] bg-gray-100 rounded-2xl overflow-hidden cursor-pointer relative group"
-                        onClick={() => openLightbox(previewIndex.current || 0)}
-                    >
-                        <img
-                            src={property.media[previewIndex || 0]?.url || 'https://placehold.co/800x600?text=No+Image'}
-                            alt={property.media[previewIndex || 0]?.label}
-                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                        />
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors pointer-events-none" />
-                        <div className="absolute bottom-4 right-4">
-                            <Button variant="secondary" className="bg-white/90 hover:bg-white text-gray-900 shadow-lg">
-                                <Maximize2 className="w-4 h-4 mr-2" /> View Fullscreen
-                            </Button>
+                    {/* Main Active Image Wrapper */}
+                    <div className="relative group">
+                        <div
+                            className="active-image-container w-full h-[400px] md:h-[600px] bg-gray-100 rounded-2xl overflow-hidden cursor-pointer relative"
+                            onClick={() => openLightbox(previewIndex.current || 0)}
+                        >
+                            <img
+                                src={property.media[previewIndex || 0]?.url || 'https://placehold.co/800x600?text=No+Image'}
+                                alt={property.media[previewIndex || 0]?.label}
+                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                            />
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors pointer-events-none" />
+
+                            <div className="absolute bottom-4 right-4 z-20">
+                                <Button variant="secondary" className="bg-white/90 hover:bg-white text-gray-900 shadow-lg">
+                                    <Maximize2 className="w-4 h-4 mr-2" /> View Fullscreen
+                                </Button>
+                            </div>
                         </div>
                     </div>
 
@@ -360,6 +343,36 @@ const PropertyDetails = () => {
                     )}
                 </div>
 
+                {/* Content Separator / Important Details */}
+                <div className="mb-12 hidden md:block">
+                    <div className="bg-white rounded-xl shadow-lg border border-gray-100 flex items-center justify-between px-8 py-6 border-b-4 border-b-[#B2845A]">
+                        <div className="flex flex-col items-center gap-2">
+                            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Updated On:</span>
+                            <span className="text-sm font-bold text-gray-900">{new Date(property.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                        </div>
+                        <div className="h-8 w-px bg-gray-200" />
+                        <div className="flex flex-col items-center gap-2">
+                            <BedDouble className="w-5 h-5 text-[#B2845A]" />
+                            <span className="text-sm font-bold text-gray-900">{property.bedrooms} Bedrooms</span>
+                        </div>
+                        <div className="h-8 w-px bg-gray-200" />
+                        <div className="flex flex-col items-center gap-2">
+                            <Bath className="w-5 h-5 text-[#B2845A]" />
+                            <span className="text-sm font-bold text-gray-900">{property.bathrooms} Bathrooms</span>
+                        </div>
+                        <div className="h-8 w-px bg-gray-200" />
+                        <div className="flex flex-col items-center gap-2">
+                            <Car className="w-5 h-5 text-[#B2845A]" />
+                            <span className="text-sm font-bold text-gray-900">{property.coveredParkingSpots || 0} Parking</span>
+                        </div>
+                        <div className="h-8 w-px bg-gray-200" />
+                        <div className="flex flex-col items-center gap-2">
+                            <Ruler className="w-5 h-5 text-[#B2845A]" />
+                            <span className="text-sm font-bold text-gray-900">{property.formattedArea}</span>
+                        </div>
+                    </div>
+                </div>
+
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 relative">
 
                     {/* Left Column: Main Content */}
@@ -368,24 +381,24 @@ const PropertyDetails = () => {
                         {/* Key Specs Strip */}
                         <div className="flex flex-wrap gap-8 py-6 border-y border-gray-100">
                             <div>
-                                <p className="text-sm text-gray-500 mb-1">Configuration</p>
-                                <p className="font-semibold text-gray-900 flex items-center gap-2">
-                                    <BedDouble className="w-4 h-4 text-orange-500" />
-                                    {property.configurationDisplay || `${property.bedrooms} Beds`}
+                                <p className="text-sm text-gray-500 mb-1">Listing Type</p>
+                                <p className="font-semibold text-gray-900 flex items-center gap-2 capitalize">
+                                    <Briefcase className="w-4 h-4 text-orange-500" />
+                                    {property.listingType?.toLowerCase()?.replace(/_/g, ' ')}
                                 </p>
                             </div>
                             <div>
-                                <p className="text-sm text-gray-500 mb-1">Bathrooms</p>
-                                <p className="font-semibold text-gray-900 flex items-center gap-2">
-                                    <Bath className="w-4 h-4 text-orange-500" />
-                                    {property.bathrooms} Baths
+                                <p className="text-sm text-gray-500 mb-1">Property Type</p>
+                                <p className="font-semibold text-gray-900 flex items-center gap-2 capitalize">
+                                    <Home className="w-4 h-4 text-orange-500" />
+                                    {property.propertyType?.toLowerCase()?.replace(/_/g, ' ')}
                                 </p>
                             </div>
                             <div>
-                                <p className="text-sm text-gray-500 mb-1">Super Build-up Area</p>
-                                <p className="font-semibold text-gray-900 flex items-center gap-2">
-                                    <Maximize2 className="w-4 h-4 text-orange-500" />
-                                    {property.formattedArea}
+                                <p className="text-sm text-gray-500 mb-1">Furnishing</p>
+                                <p className="font-semibold text-gray-900 flex items-center gap-2 capitalize">
+                                    <Sofa className="w-4 h-4 text-orange-500" />
+                                    {property.furnishingStatusDisplay || 'Unfurnished'}
                                 </p>
                             </div>
                             {property.carpetArea && (
@@ -434,39 +447,7 @@ const PropertyDetails = () => {
                             </div>
                         )}
 
-                        {/* Property Details Grid */}
-                        <div className="py-8 border-t border-gray-100">
-                            <h2 className="text-2xl font-bold text-gray-900 mb-6">Comparison Details</h2>
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-y-6 gap-x-12">
-                                <div>
-                                    <p className="text-sm text-gray-500 mb-1">Property Type</p>
-                                    <p className="font-medium text-gray-900">{property.propertyType?.replace('_', ' ')}</p>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-500 mb-1">Listing Type</p>
-                                    <p className="font-medium text-gray-900 capitalize">{property.listingType}</p>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-500 mb-1">Furnishing</p>
-                                    <p className="font-medium text-gray-900 flex items-center gap-2">
-                                        <Sofa className="w-4 h-4 text-gray-400" />
-                                        {property.furnishingStatusDisplay}
-                                    </p>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-500 mb-1">Parking</p>
-                                    <p className="font-medium text-gray-900">{property.parkingSummary}</p>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-500 mb-1">Facing</p>
-                                    <p className="font-medium text-gray-900">{property.viewTypes}</p>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-500 mb-1">Age of Property</p>
-                                    <p className="font-medium text-gray-900">{property.daysSinceLastActivity} days listed</p>
-                                </div>
-                            </div>
-                        </div>
+
 
                         {/* Property Video */}
                         {property.videoUrl && (
@@ -484,19 +465,25 @@ const PropertyDetails = () => {
                             </div>
                         )}
 
-                        {/* Location Map - Only show if coordinates exist */}
-                        {property.latitude && property.longitude && (
-                            <div className="py-8 border-t border-gray-100">
-                                <h2 className="text-2xl font-bold text-gray-900 mb-6">Location</h2>
-                                <div className="bg-gray-100 h-[400px] rounded-2xl overflow-hidden mb-6 relative border border-gray-200">
+                        {/* Location Map */}
+                        <div className="py-8 border-t border-gray-100">
+                            <h2 className="text-2xl font-bold text-gray-900 mb-6">Location</h2>
+                            <div className="bg-gray-100 h-[400px] rounded-2xl overflow-hidden mb-6 relative border border-gray-200">
+                                {property.latitude && property.longitude ? (
                                     <MapComponent
                                         latitude={property.latitude}
                                         longitude={property.longitude}
                                         title={property.title}
                                     />
-                                </div>
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center flex-col gap-2 bg-slate-50">
+                                        <MapPin className="w-10 h-10 text-gray-300" />
+                                        <p className="text-gray-500 font-medium">Map view unavailable for this address</p>
+                                        <p className="text-sm text-gray-400">{property.formattedAddress}</p>
+                                    </div>
+                                )}
                             </div>
-                        )}
+                        </div>
 
                     </div>
 
@@ -527,43 +514,15 @@ const PropertyDetails = () => {
                                     </Button>
                                 </div>
 
-                                <div className="mt-6 pt-6 border-t border-gray-100 flex items-center justify-center gap-2 text-sm text-gray-500">
-                                    <ShieldCheck className="w-4 h-4 text-green-600" />
-                                    <span>Verified Listing</span>
-                                </div>
+
                             </div>
 
                             {/* Additional Info / Agent Card Placeholder */}
-                            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                                <h3 className="font-semibold text-gray-900 mb-4">Why buy this property?</h3>
-                                <ul className="space-y-3">
-                                    {property.isCornerUnit && (
-                                        <li className="flex items-start gap-2 text-sm text-gray-600">
-                                            <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
-                                            <span>Corner Unit (Better ventilation)</span>
-                                        </li>
-                                    )}
-                                    {property.reraApproved && (
-                                        <li className="flex items-start gap-2 text-sm text-gray-600">
-                                            <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
-                                            <span>RERA Approved</span>
-                                        </li>
-                                    )}
-                                    <li className="flex items-start gap-2 text-sm text-gray-600">
-                                        <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
-                                        <span>Premium Location</span>
-                                    </li>
-                                </ul>
-                                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2 mt-6 pt-6 border-t border-gray-100">
-                                    <Calendar className="w-5 h-5 text-[#B2845A]" /> Schedule Visit
-                                </h3>
-
-                                <Button
-                                    className="w-full bg-[#B2845A] hover:bg-[#8a623e] text-white"
-                                    onClick={() => setIsVisitModalOpen(true)}
-                                >
-                                    <Calendar className="w-4 h-4 mr-2" /> Book Viewing
-                                </Button>
+                            <div>
+                                <ScheduleVisitForm
+                                    title={property?.title}
+                                    propertyId={property?.id}
+                                />
                             </div>
 
                         </div>
@@ -615,12 +574,7 @@ const PropertyDetails = () => {
                 propertyId={property?.id}
             />
 
-            <ScheduleVisitForm
-                isOpen={isVisitModalOpen}
-                onClose={() => setIsVisitModalOpen(false)}
-                title={property?.title}
-                propertyId={property?.id}
-            />
+
         </div>
     );
 };

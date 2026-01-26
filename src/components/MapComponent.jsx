@@ -10,22 +10,27 @@ const MapComponent = ({ latitude, longitude, title }) => {
         let isMounted = true;
 
         const initMap = async () => {
-            // Prevent multiple initializations if global exists, but ensure we get the libs
-            if (!window.google?.maps) {
-                try {
+            // Always set options to ensure key is loaded, even if previously loaded without it
+            try {
+                // Check if already loaded to avoid warning, but for NoApiKeys error we might need to set it anyway
+                if (!window.google?.maps?.importLibrary) {
                     setOptions({
                         apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
                         version: "weekly",
+                        libraries: ["maps", "marker"] // Add libraries here to be safe
                     });
-                } catch (e) {
-                    console.error("Error setting options", e);
+                } else {
+                    // If it exists but we got NoApiKeys, re-setting options might help if it wasn't fully loaded
+                    setOptions({
+                        apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+                    });
                 }
+            } catch (e) {
+                console.error("Error setting options", e);
             }
 
             try {
-                // We need the 'maps' library for the Map class
                 const { Map } = await importLibrary('maps');
-                // Ensure marker library is loaded for google.maps.Marker
                 await importLibrary('marker');
 
                 if (!isMounted) return;
@@ -38,6 +43,7 @@ const MapComponent = ({ latitude, longitude, title }) => {
                         center: { lat, lng },
                         zoom: 14,
                         mapTypeId: 'roadmap',
+                        mapId: "DEMO_MAP_ID",
                     });
 
                     // Add Legacy Marker
@@ -66,7 +72,6 @@ const MapComponent = ({ latitude, longitude, title }) => {
 
         return () => {
             isMounted = false;
-            // Cleanup markers if needed? Maps API usually handles this but good practice.
             if (markerRef.current) {
                 markerRef.current.setMap(null);
             }
