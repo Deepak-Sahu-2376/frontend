@@ -427,6 +427,7 @@ const ProjectDetails = () => {
                         <div>
                             <h2 className="text-2xl font-bold text-gray-900 mb-4">About {project.name}</h2>
                             <p className="text-gray-600 leading-relaxed text-lg whitespace-pre-line">
+                                {project.description || "No description available."}
                             </p>
                         </div>
 

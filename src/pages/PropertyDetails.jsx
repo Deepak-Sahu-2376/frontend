@@ -151,11 +151,16 @@ const PropertyDetails = () => {
         // Calculated Fields
         const daysSinceLastActivity = Math.floor((new Date() - new Date(data.updatedAt)) / (1000 * 60 * 60 * 24));
 
+        // Determine correct price field
+        const effectivePrice = ['RENT', 'PG', 'PAYING_GUEST', 'COMMERCIAL_RENT'].includes(data.listingType)
+            ? data.monthlyRent
+            : data.basePrice;
+
         return {
             ...data,
             media: media,
             amenitiesList: amenitiesList,
-            formattedPrice: formatPrice(data.basePrice),
+            formattedPrice: formatPrice(effectivePrice) + (['RENT', 'PG', 'PAYING_GUEST'].includes(data.listingType) ? '/mo' : ''),
             videoUrl: getImageUrl(data.videoUrl || data.video),
             floorPlan: getImageUrl(data.floorPlan),
 

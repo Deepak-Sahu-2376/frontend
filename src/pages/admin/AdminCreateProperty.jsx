@@ -45,6 +45,11 @@ const AdminCreateProperty = () => {
     const [loading, setLoading] = useState(false);
     const [amenities, setAmenities] = useState([]);
     const [images, setImages] = useState([]);
+    const [existingImages, setExistingImages] = useState([]); // New State
+    const [imagesToDelete, setImagesToDelete] = useState([]); // New State
+    const [existingFloorPlan, setExistingFloorPlan] = useState(null);
+    const [existingVideo, setExistingVideo] = useState(null);
+
     const [floorPlan, setFloorPlan] = useState(null);
     const [video, setVideo] = useState(null);
     const [companies, setCompanies] = useState([]);
@@ -173,11 +178,10 @@ const AdminCreateProperty = () => {
                     coveredParkingSpots: p.coveredParkingSpots || '',
                     companyId: p.companyId || ''
                 });
-                setAmenities(p.amenities ? p.amenities.map(a => a.name || a) : []); // Assuming simple string or object
-                // Images/Video/FloorPlan handling for edit:
-                // We typically just show existing and allow adding new ones. 
-                // Detailed media management (deleting existing) is complex for one step.
-                // Let's just load text data for now.
+                setAmenities(p.amenities ? p.amenities.map(a => a.name || a) : []);
+                setExistingImages(p.images || []);
+                setExistingFloorPlan(p.floorPlan);
+                setExistingVideo(p.video);
             } else {
                 toast.error("Failed to fetch property details");
             }
@@ -240,6 +244,12 @@ const AdminCreateProperty = () => {
         setImages(prev => prev.filter((_, i) => i !== index));
     };
 
+    const handleDeleteExistingImage = (index) => {
+        const url = existingImages[index];
+        setImagesToDelete(prev => [...prev, url]);
+        setExistingImages(prev => prev.filter((_, i) => i !== index));
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -280,6 +290,11 @@ const AdminCreateProperty = () => {
             // Append files
             images.forEach(image => {
                 submitFormData.append('images', image);
+            });
+
+            // Append deleted images
+            imagesToDelete.forEach(url => {
+                submitFormData.append('imagesToDelete', url);
             });
 
             if (floorPlan) {
@@ -715,18 +730,37 @@ const AdminCreateProperty = () => {
                         Pricing
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Base Price (₹) *</label>
-                            <input
-                                type="number"
-                                name="basePrice"
-                                required
-                                min="0"
-                                value={formData.basePrice}
-                                onChange={handleInputChange}
-                                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all"
-                            />
-                        </div>
+                        {/* Sale Price - Show only for SALE */}
+                        {formData.listingType === 'SALE' && (
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Base Price (₹) *</label>
+                                <input
+                                    type="number"
+                                    name="basePrice"
+                                    required={formData.listingType === 'SALE'}
+                                    min="0"
+                                    value={formData.basePrice}
+                                    onChange={handleInputChange}
+                                    className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all"
+                                />
+                            </div>
+                        )}
+
+                        {/* Rent Price - Show for RENT, PG, COMMERCIAL_RENT */}
+                        {['RENT', 'PG', 'COMMERCIAL_RENT'].includes(formData.listingType) && (
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Monthly Rent (₹) *</label>
+                                <input
+                                    type="number"
+                                    name="monthlyRent"
+                                    required={['RENT', 'PG', 'COMMERCIAL_RENT'].includes(formData.listingType)}
+                                    min="0"
+                                    value={formData.monthlyRent}
+                                    onChange={handleInputChange}
+                                    className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all"
+                                />
+                            </div>
+                        )}
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Floor Rise Charges (₹)</label>
@@ -739,20 +773,6 @@ const AdminCreateProperty = () => {
                                 className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all"
                             />
                         </div>
-
-                        {(formData.listingType === 'RENT' || formData.listingType === 'PG' || formData.listingType === 'COMMERCIAL_RENT') && (
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Monthly Rent (₹)</label>
-                                <input
-                                    type="number"
-                                    name="monthlyRent"
-                                    min="0"
-                                    value={formData.monthlyRent}
-                                    onChange={handleInputChange}
-                                    className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all"
-                                />
-                            </div>
-                        )}
                     </div>
                 </div>
 
@@ -776,8 +796,39 @@ const AdminCreateProperty = () => {
 
                     <div className="space-y-6">
                         {/* Images */}
+                        {/* Images */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">Property Images</label>
+
+                            {/* Existing Images */}
+                            {existingImages.length > 0 && (
+                                <div className="mb-4">
+                                    <h5 className="text-xs text-gray-500 mb-2 uppercase tracking-wide">Existing Images</h5>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                        {existingImages.map((url, index) => (
+                                            <div key={index} className="relative group h-24 rounded-lg overflow-hidden border border-gray-200">
+                                                <img
+                                                    src={API_BASE_URL + url}
+                                                    alt={`existing ${index}`}
+                                                    className="w-full h-full object-cover"
+                                                    onError={(e) => {
+                                                        e.target.onerror = null;
+                                                        e.target.src = 'https://placehold.co/100?text=Error';
+                                                    }}
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleDeleteExistingImage(index)}
+                                                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                >
+                                                    <X className="h-4 w-4" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-orange-500 transition-colors">
                                 <input
                                     type="file"
@@ -818,6 +869,13 @@ const AdminCreateProperty = () => {
                         {/* Floor Plan */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">Floor Plan (PDF/Image)</label>
+                            {existingFloorPlan && (
+                                <div className="mb-2 flex items-center gap-2 text-sm text-blue-600 bg-blue-50 p-2 rounded">
+                                    <FileText className="h-4 w-4" />
+                                    <a href={API_BASE_URL + existingFloorPlan} target="_blank" rel="noopener noreferrer" className="hover:underline truncate max-w-xs">{existingFloorPlan.split('/').pop()}</a>
+                                    <span className="text-gray-400 text-xs ml-auto">(Upload new to replace)</span>
+                                </div>
+                            )}
                             <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-orange-500 transition-colors">
                                 <input
                                     type="file"
@@ -836,6 +894,13 @@ const AdminCreateProperty = () => {
                         {/* Video */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">Property Video</label>
+                            {existingVideo && (
+                                <div className="mb-2 flex items-center gap-2 text-sm text-blue-600 bg-blue-50 p-2 rounded">
+                                    <Video className="h-4 w-4" />
+                                    <a href={API_BASE_URL + existingVideo} target="_blank" rel="noopener noreferrer" className="hover:underline truncate max-w-xs">{existingVideo.split('/').pop()}</a>
+                                    <span className="text-gray-400 text-xs ml-auto">(Upload new to replace)</span>
+                                </div>
+                            )}
                             <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-orange-500 transition-colors">
                                 <input
                                     type="file"

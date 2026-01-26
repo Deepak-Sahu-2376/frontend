@@ -65,6 +65,8 @@ const CreateProject = () => {
     });
 
     const [mediaUploads, setMediaUploads] = useState([]);
+    const [existingMedia, setExistingMedia] = useState([]);
+    const [mediaToDelete, setMediaToDelete] = useState([]);
 
     useEffect(() => {
         if (isEditMode) {
@@ -125,6 +127,9 @@ const CreateProject = () => {
                 // Media handling is complex (showing existing, allowing deletes). 
                 // For now, let's allow adding NEW media. Existing media management needs separate UI block often.
                 // We could show existing media in a separate block if needed.
+                if (p.media) {
+                    setExistingMedia(p.media);
+                }
             } else {
                 toast.error("Failed to fetch project details");
             }
@@ -198,6 +203,12 @@ const CreateProject = () => {
         })));
     };
 
+    const handleDeleteExistingMedia = (index) => {
+        const item = existingMedia[index];
+        setMediaToDelete(prev => [...prev, item.url]);
+        setExistingMedia(prev => prev.filter((_, i) => i !== index));
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
@@ -214,7 +225,7 @@ const CreateProject = () => {
                 return;
             }
 
-            if (mediaUploads.length === 0) {
+            if (!isEditMode && mediaUploads.length === 0) {
                 toast.error('Please upload at least one image or video');
                 setIsSubmitting(false);
                 return;
@@ -288,6 +299,13 @@ const CreateProject = () => {
                 formDataToSend.append('categories', upload.category);
                 formDataToSend.append('isPrimaryFlags', upload.isPrimary.toString());
             });
+
+            // Append deleted media URLs
+            mediaToDelete.forEach(url => {
+                formDataToSend.append('mediaToDelete', url);
+            });
+
+            // Make API call
 
             // Make API call
             // Make API call
