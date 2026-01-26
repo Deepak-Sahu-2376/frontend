@@ -55,10 +55,18 @@ const UserProfile = () => {
     const [myProperties, setMyProperties] = useState([]);
     const [loadingProperties, setLoadingProperties] = useState(false);
 
+    // New state for Received Visits and Inquiries (For Property Owners)
+    const [receivedVisits, setReceivedVisits] = useState([]);
+    const [loadingReceivedVisits, setLoadingReceivedVisits] = useState(false);
+    const [receivedInquiries, setReceivedInquiries] = useState([]);
+    const [loadingReceivedInquiries, setLoadingReceivedInquiries] = useState(false);
+
     useEffect(() => {
         if (contextUser?.userType === 'BUYER' || contextUser?.roles?.includes('BUYER')) {
             loadVisits();
             loadMyProperties();
+            loadReceivedVisits();
+            loadReceivedInquiries();
         }
     }, [contextUser]);
 
@@ -105,6 +113,36 @@ const UserProfile = () => {
             loadVisits(); // Refresh list
         } else {
             toast.error(result.message || "Failed to cancel visit");
+        }
+    };
+
+    const loadReceivedVisits = async () => {
+        setLoadingReceivedVisits(true);
+        try {
+            // Include full API path including version
+            const response = await api.get('/api/v1/visits/received');
+            if (response.success && response.data) {
+                const list = response.data.content || response.data || [];
+                setReceivedVisits(list); // Use list, not response.data directly if mapped
+            }
+        } catch (error) {
+            console.error("Failed to load received visits:", error);
+        } finally {
+            setLoadingReceivedVisits(false);
+        }
+    };
+
+    const loadReceivedInquiries = async () => {
+        setLoadingReceivedInquiries(true);
+        try {
+            const response = await api.get('/api/v1/inquiries/received');
+            if (response.success && response.data) {
+                setReceivedInquiries(response.data || []);
+            }
+        } catch (error) {
+            console.error("Failed to load received inquiries:", error);
+        } finally {
+            setLoadingReceivedInquiries(false);
         }
     };
 
@@ -495,6 +533,99 @@ const UserProfile = () => {
                                     <Button variant="link" className="text-orange-600 mt-2" onClick={() => navigate('/buyer/post-property')}>
                                         Post a Property
                                     </Button>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                )}
+
+                {/* Received Visits Section - For Owners */}
+                {(contextUser?.userType === 'BUYER' || contextUser?.userType === 'AGENT') && (
+                    <Card className="border-none shadow-md">
+                        <CardHeader>
+                            <CardTitle className="text-xl font-bold flex items-center gap-2">
+                                <Calendar className="h-5 w-5 text-orange-600" />
+                                Visits on My Properties
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            {loadingReceivedVisits ? (
+                                <div className="flex justify-center py-8">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-orange-500"></div>
+                                </div>
+                            ) : receivedVisits.length > 0 ? (
+                                <div className="space-y-4">
+                                    {receivedVisits.map((visit) => (
+                                        <div key={visit.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border rounded-lg bg-white hover:shadow-md transition-shadow">
+                                            <div className="mb-2 sm:mb-0">
+                                                <h4 className="font-semibold text-gray-900">{visit.property?.title || `Property #${visit.propertyId}`}</h4>
+                                                <div className="flex flex-col sm:flex-row sm:items-center text-sm text-gray-500 mt-1 gap-2 sm:gap-4">
+                                                    <span className="flex items-center">
+                                                        <User className="w-3 h-3 mr-1" />
+                                                        Visitor: {visit.user?.firstName} {visit.user?.lastName} ({visit.user?.email})
+                                                    </span>
+                                                    <span className="flex items-center">
+                                                        <Clock className="w-3 h-3 mr-1" />
+                                                        {new Date(visit.preferredVisitTime).toLocaleDateString()} at {new Date(visit.preferredVisitTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <Badge className={
+                                                visit.status === 'CONFIRMED' || visit.status === 'COMPLETED' ? 'bg-green-100 text-green-700' :
+                                                    visit.status === 'CANCELLED' || visit.status === 'REJECTED' ? 'bg-red-100 text-red-700' :
+                                                        'bg-yellow-100 text-yellow-700'
+                                            }>
+                                                {visit.status}
+                                            </Badge>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-8 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                                    <Calendar className="h-10 w-10 text-gray-300 mx-auto mb-2" />
+                                    <p className="text-gray-500">No visits scheduled on your properties yet.</p>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                )}
+
+                {/* Received Inquiries Section - For Owners */}
+                {(contextUser?.userType === 'BUYER' || contextUser?.userType === 'AGENT') && (
+                    <Card className="border-none shadow-md">
+                        <CardHeader>
+                            <CardTitle className="text-xl font-bold flex items-center gap-2">
+                                <Mail className="h-5 w-5 text-orange-600" />
+                                Enquiries Received
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            {loadingReceivedInquiries ? (
+                                <div className="flex justify-center py-8">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-orange-500"></div>
+                                </div>
+                            ) : receivedInquiries.length > 0 ? (
+                                <div className="space-y-4">
+                                    {receivedInquiries.map((inquiry) => (
+                                        <div key={inquiry.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border rounded-lg bg-white hover:shadow-md transition-shadow">
+                                            <div className="mb-2 sm:mb-0">
+                                                <h4 className="font-semibold text-gray-900">{inquiry.property?.title || "Property Inquiry"}</h4>
+                                                <div className="text-sm text-gray-600 mt-1">
+                                                    <span className="font-medium">{inquiry.name}</span> ({inquiry.email}, {inquiry.phone})
+                                                </div>
+                                                <p className="text-sm text-gray-500 italic mt-1">"{inquiry.message}"</p>
+                                                <p className="text-xs text-gray-400 mt-1">{new Date(inquiry.createdAt).toLocaleDateString()}</p>
+                                            </div>
+                                            <Button variant="outline" size="sm" onClick={() => window.location.href = `mailto:${inquiry.email}`}>
+                                                Reply
+                                            </Button>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-8 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                                    <Mail className="h-10 w-10 text-gray-300 mx-auto mb-2" />
+                                    <p className="text-gray-500">No enquiries received yet.</p>
                                 </div>
                             )}
                         </CardContent>
