@@ -7,7 +7,7 @@ import { Button } from '../../components/ui/button';
 import { MapPin, Building2, Calendar, Eye, Pencil, Trash } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import DeleteConfirmationDialog from '../../components/admin/DeleteConfirmationDialog';
+import DeleteConfirmationDialog from './DeleteConfirmationDialog';
 
 const AdminProjects = () => {
     const navigate = useNavigate();
