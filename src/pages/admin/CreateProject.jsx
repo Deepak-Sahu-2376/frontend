@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
@@ -21,6 +21,8 @@ import { AMENITIES_LIST, AMENITY_CATEGORIES } from '../../data/amenities';
 
 const CreateProject = () => {
     const navigate = useNavigate();
+    const { id } = useParams();
+    const isEditMode = !!id;
     const { companies } = useAdmin();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -63,6 +65,74 @@ const CreateProject = () => {
     });
 
     const [mediaUploads, setMediaUploads] = useState([]);
+
+    useEffect(() => {
+        if (isEditMode) {
+            fetchProjectDetails();
+        }
+    }, [id]);
+
+    const fetchProjectDetails = async () => {
+        try {
+            // Fetch project details. Assuming generic getProjectById endpoint works without auth header for public checks BUT likely need admin token for Admin view if restricted.
+            // Using admin token to be safe if endpoint supports it or rely on public endpoint.
+            // Route: GET /api/v1/properties/projects/:id (Line 82 propertyRoutes.js) -> getProjectById
+            const token = localStorage.getItem('adminAccessToken');
+            const response = await fetch(`${API_BASE_URL}/api/v1/properties/projects/${id}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                const p = result.data;
+                setFormData({
+                    name: p.name || '',
+                    description: p.description || '',
+                    projectType: p.projectType || '',
+                    companyId: p.companyId ? String(p.companyId) : '',
+                    address: p.address || '',
+                    city: p.city || '',
+                    state: p.state || '',
+                    pincode: p.pincode || '',
+                    country: p.country || 'India',
+                    totalArea: p.totalArea || '',
+                    totalUnits: p.totalUnits || '',
+                    startingPrice: p.startingPrice || '',
+                    amenities: p.amenities || [],
+
+                    totalPhases: p.totalPhases || '',
+                    availableUnits: p.availableUnits || '',
+                    totalFloors: p.totalFloors || '',
+                    totalTowers: p.totalTowers || '',
+                    avgPrice: p.avgPrice || '',
+                    priceRangeMax: p.priceRangeMax || '',
+                    pricePerSqft: p.pricePerSqft || '',
+                    possessionDate: p.possessionDate ? p.possessionDate.split('T')[0] : '',
+                    latitude: p.latitude || '',
+                    longitude: p.longitude || '',
+                    locationAdvantages: p.locationAdvantages ? p.locationAdvantages.join('\n') : '',
+                    reraApproved: p.reraApproved || false,
+                    reraValidityDate: p.reraValidityDate ? p.reraValidityDate.split('T')[0] : '',
+                    developerName: p.developerName || '',
+                    architectName: p.architectName || '',
+                    launchDate: p.launchDate ? p.launchDate.split('T')[0] : '',
+                    expectedCompletion: p.expectedCompletion ? p.expectedCompletion.split('T')[0] : '',
+                    isFeatured: p.isFeatured || false,
+                    isActive: p.isActive || false
+                });
+                // Media handling is complex (showing existing, allowing deletes). 
+                // For now, let's allow adding NEW media. Existing media management needs separate UI block often.
+                // We could show existing media in a separate block if needed.
+            } else {
+                toast.error("Failed to fetch project details");
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error("Error loading project");
+        }
+    };
 
     // availableAmenities removed in favor of AMENITIES_LIST from data/amenities.js
 
@@ -220,8 +290,15 @@ const CreateProject = () => {
             });
 
             // Make API call
-            const response = await fetch(`${API_BASE_URL}/api/v1/properties/projects/create`, {
-                method: 'POST',
+            // Make API call
+            const url = isEditMode
+                ? `${API_BASE_URL}/api/v1/properties/projects/${id}`
+                : `${API_BASE_URL}/api/v1/properties/projects/create`;
+
+            const method = isEditMode ? 'PUT' : 'POST';
+
+            const response = await fetch(url, {
+                method: method,
                 headers: {
                     'Authorization': `Bearer ${adminToken}`,
                 },
@@ -231,10 +308,10 @@ const CreateProject = () => {
             const result = await response.json();
 
             if (response.ok) {
-                toast.success('Project created successfully!');
+                toast.success(isEditMode ? 'Project updated successfully!' : 'Project created successfully!');
                 navigate('/admin/projects');
             } else {
-                toast.error(result.message || 'Failed to create project');
+                toast.error(result.message || (isEditMode ? 'Failed to update project' : 'Failed to create project'));
             }
         } catch (error) {
             console.error('Error creating project:', error);
@@ -248,8 +325,8 @@ const CreateProject = () => {
         <div className="max-w-5xl mx-auto space-y-6 pb-10">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Create Project</h1>
-                    <p className="text-muted-foreground mt-1">Add a new real estate project to your portfolio</p>
+                    <h1 className="text-3xl font-bold tracking-tight">{isEditMode ? 'Edit Project' : 'Create Project'}</h1>
+                    <p className="text-muted-foreground mt-1">{isEditMode ? 'Update project details' : 'Add a new real estate project to your portfolio'}</p>
                 </div>
                 <div className="flex gap-4">
                     <Button variant="outline" onClick={() => navigate(-1)}>Cancel</Button>
@@ -258,7 +335,7 @@ const CreateProject = () => {
                         onClick={handleSubmit}
                         disabled={isSubmitting}
                     >
-                        {isSubmitting ? 'Creating...' : 'Create Project'}
+                        {isSubmitting ? (isEditMode ? 'Updating...' : 'Creating...') : (isEditMode ? 'Update Project' : 'Create Project')}
                     </Button>
                 </div>
             </div>

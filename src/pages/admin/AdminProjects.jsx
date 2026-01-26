@@ -4,8 +4,10 @@ import { useAdmin } from '../../contexts/AdminContext';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { MapPin, Building2, Calendar, Eye } from 'lucide-react';
+import { MapPin, Building2, Calendar, Eye, Pencil, Trash } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import DeleteConfirmationDialog from '../../components/admin/DeleteConfirmationDialog';
 
 const AdminProjects = () => {
     const navigate = useNavigate();
@@ -60,6 +62,45 @@ const AdminProjects = () => {
         setPage(nextPage);
         fetchProjects(nextPage);
     };
+
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState(null);
+
+    const initiateDelete = (project) => {
+        setItemToDelete(project);
+        setDeleteDialogOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!itemToDelete) return;
+        const id = itemToDelete.id;
+
+        try {
+            const token = localStorage.getItem('adminAccessToken');
+            const response = await fetch(`${API_BASE_URL}/api/v1/properties/projects/${id}`, { // Using property routes for project actions if standard REST
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                toast.success('Project deleted successfully');
+                window.location.reload();
+            } else {
+                const data = await response.json();
+                toast.error(data.message || 'Failed to delete project');
+                throw new Error(data.message);
+            }
+        } catch (error) {
+            console.error('Delete error:', error);
+            toast.error('An error occurred while deleting');
+            throw error;
+        }
+    };
+
+    // Old handleDelete removed
+    // const handleDelete = ...
 
     return (
         <div className="p-6 space-y-6">
@@ -139,8 +180,26 @@ const AdminProjects = () => {
                                                     variant="ghost"
                                                     size="sm"
                                                     onClick={() => navigate(`/projects/${project.id}`)}
+                                                    title="View"
                                                 >
                                                     <Eye className="w-4 h-4" />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => navigate(`/admin/projects/edit/${project.id}`)}
+                                                    title="Edit"
+                                                >
+                                                    <Pencil className="w-4 h-4" />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => initiateDelete(project)}
+                                                    title="Delete"
+                                                    className="text-red-600 hover:bg-red-50"
+                                                >
+                                                    <Trash className="w-4 h-4" />
                                                 </Button>
                                             </td>
                                         </tr>
@@ -198,12 +257,30 @@ const AdminProjects = () => {
                                         <Eye className="w-4 h-4 mr-2" />
                                         View Project
                                     </Button>
+                                    <Button
+                                        variant="outline"
+                                        className="w-full text-red-700 border-red-200 hover:bg-red-50 mt-2"
+                                        size="sm"
+                                        onClick={() => initiateDelete(project)}
+                                    >
+                                        <Trash className="w-4 h-4 mr-2" />
+                                        Delete Project
+                                    </Button>
                                 </div>
                             ))
                         )}
                     </div>
                 </CardContent>
             </Card>
+
+            <DeleteConfirmationDialog
+                isOpen={deleteDialogOpen}
+                onClose={() => setDeleteDialogOpen(false)}
+                onConfirm={confirmDelete}
+                title="Delete Project"
+                itemName={itemToDelete?.name}
+                description="Are you sure you want to delete this project? This action cannot be undone and will permanently delete the project listing and all associated media files."
+            />
 
             {/* Load More Button */}
             {hasMore && !loading && (

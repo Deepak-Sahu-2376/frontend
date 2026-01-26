@@ -1,7 +1,10 @@
 import { Button } from '../../components/ui/button';
-import { Eye } from 'lucide-react';
+import { Eye, Pencil, Trash } from 'lucide-react';
 import { useAdmin } from '../../contexts/AdminContext';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import DeleteConfirmationDialog from '../../components/admin/DeleteConfirmationDialog';
 
 const AdminProperties = () => {
     const navigate = useNavigate();
@@ -23,12 +26,53 @@ const AdminProperties = () => {
         return `₹${price.toLocaleString('en-IN')}`;
     };
 
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState(null);
+
+    const initiateDelete = (property) => {
+        setItemToDelete(property);
+        setDeleteDialogOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!itemToDelete) return;
+
+        const id = itemToDelete.id;
+        try {
+            const token = localStorage.getItem('adminAccessToken');
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/v1/properties/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                toast.success('Property deleted successfully');
+                window.location.reload();
+            } else {
+                const data = await response.json();
+                toast.error(data.message || 'Failed to delete property');
+                throw new Error(data.message);
+            }
+        } catch (error) {
+            console.error('Delete error:', error);
+            toast.error('An error occurred while deleting');
+            throw error; // Propagate to dialog to show error state if needed
+        }
+    };
+
+
+
+    // Filter to show only APPROVED properties as per requirements
+    const approvedProperties = properties.filter(p => (p.verificationStatus || p.status) === 'APPROVED');
+
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-bold text-gray-900">Property Listings</h1>
                 <div className="text-sm text-gray-500">
-                    <span className="font-medium text-gray-900">{properties.length} total</span> <span className="text-orange-600 font-medium">{properties.filter(p => (p.verificationStatus || p.status) === 'PENDING').length} pending</span>
+                    <span className="font-medium text-gray-900">{approvedProperties.length} active</span>
                 </div>
             </div>
 
@@ -47,7 +91,7 @@ const AdminProperties = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                            {properties.map((property) => (
+                            {approvedProperties.map((property) => (
                                 <tr key={property.id} className="hover:bg-gray-50 transition-colors">
                                     <td className="px-6 py-4">
                                         <div className="font-medium text-gray-900">{property.title}</div>
@@ -97,8 +141,27 @@ const AdminProperties = () => {
                                                 variant="ghost"
                                                 className="h-7 w-7 p-0 text-blue-600 hover:bg-blue-50"
                                                 onClick={() => navigate(`/property/${property.id}`)}
+                                                title="View"
                                             >
                                                 <Eye className="h-4 w-4" />
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                className="h-7 w-7 p-0 text-orange-600 hover:bg-orange-50"
+                                                onClick={() => navigate(`/admin/properties/edit/${property.id}`)}
+                                                title="Edit"
+                                            >
+                                                <Pencil className="h-4 w-4" />
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                className="h-7 w-7 p-0 text-red-600 hover:bg-red-50"
+                                                onClick={() => initiateDelete(property)}
+                                                title="Delete"
+                                            >
+                                                <Trash className="h-4 w-4" />
                                             </Button>
                                         </div>
                                     </td>
@@ -110,7 +173,7 @@ const AdminProperties = () => {
 
                 {/* Mobile Card View */}
                 <div className="md:hidden divide-y divide-gray-100">
-                    {properties.map((property) => (
+                    {approvedProperties.map((property) => (
                         <div key={property.id} className="p-4 space-y-3">
                             <div className="flex justify-between items-start">
                                 <div>
@@ -175,11 +238,28 @@ const AdminProperties = () => {
                                 >
                                     View Details
                                 </Button>
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="flex-1 text-red-600 hover:bg-red-50 border-red-200"
+                                    onClick={() => initiateDelete(property)}
+                                >
+                                    Delete
+                                </Button>
                             </div>
                         </div>
                     ))}
                 </div>
             </div>
+
+            <DeleteConfirmationDialog
+                isOpen={deleteDialogOpen}
+                onClose={() => setDeleteDialogOpen(false)}
+                onConfirm={confirmDelete}
+                title="Delete Property"
+                itemName={itemToDelete?.title}
+                description="Are you sure you want to delete this property? This action cannot be undone and will permanently delete the property listing and all associated media files."
+            />
         </div>
     );
 };

@@ -228,10 +228,12 @@ function App() {
                     <Route path="/admin" element={<AdminDashboard />} />
                     <Route path="/admin/properties" element={<AdminProperties />} />
                     <Route path="/admin/properties/create" element={<AdminCreateProperty />} />
+                    <Route path="/admin/properties/edit/:id" element={<AdminCreateProperty />} />
                     <Route path="/admin/properties/pending" element={<AdminPendingProperties />} />
                     <Route path="/admin/projects" element={<AdminProjects />} />
                     <Route path="/admin/projects/pending-approval" element={<AdminPendingProjects />} />
                     <Route path="/admin/projects/create" element={<CreateProject />} />
+                    <Route path="/admin/projects/edit/:id" element={<CreateProject />} />
                     <Route path="/admin/phases/create" element={<CreatePhase />} />
                     <Route path="/admin/agents" element={<AdminAgents />} />
                     <Route path="/admin/agents/requests" element={<AdminAgentRequests />} />
