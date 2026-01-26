@@ -109,6 +109,13 @@ const getAmenityIcon = (name) => {
     return amenityIcons['default'];
 };
 
+const formatPrice = (price) => {
+    if (!price) return null;
+    if (price >= 10000000) return `₹${(price / 10000000).toFixed(2)} Cr`;
+    if (price >= 100000) return `₹${(price / 100000).toFixed(2)} L`;
+    return `₹${price.toLocaleString('en-IN')}`;
+};
+
 const ProjectDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -188,7 +195,11 @@ const ProjectDetails = () => {
             developer: data.developerName || data.company?.companyName,
             address: data.formattedAddress || `${data.address}, ${data.city}, ${data.state}`,
             reraId: data.phases?.[0]?.reraNumber || (data.reraApproved ? "RERA Approved" : "Pending"),
-            priceRange: data.formattedPriceRange,
+            priceRange: data.formattedPriceRange || (
+                (data.startingPrice && data.priceRangeMax)
+                    ? `${formatPrice(data.startingPrice)} - ${formatPrice(data.priceRangeMax)}`
+                    : (data.startingPrice ? `Starts from ${formatPrice(data.startingPrice)}` : "Price on Request")
+            ),
             sizeRange: data.formattedArea,
             configurations: data.projectType,
             floors: data.totalFloors ? `G+${data.totalFloors}` : 'N/A',
