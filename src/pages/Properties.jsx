@@ -72,6 +72,9 @@ const Properties = () => {
   const typeParam = searchParams.get('type');
   const subTypeParam = searchParams.get('subtype'); // Check for subtype if needed
   const listingTypeParam = searchParams.get('listingType'); // For Buy/Sell/Rent filtering
+  const cityParam = searchParams.get('city');
+
+  // Listing type filter state
 
   // Listing type filter state
   const [selectedListingType, setSelectedListingType] = useState("");
@@ -112,7 +115,11 @@ const Properties = () => {
     } else {
       setSelectedListingType("");
     }
-  }, [listingTypeParam]);
+
+    if (cityParam) {
+      setSearchQuery(cityParam);
+    }
+  }, [listingTypeParam, cityParam]);
 
   // Fetch Data
   const fetchProperties = async (page = 0) => {
@@ -277,6 +284,17 @@ const Properties = () => {
       <div className="sticky top-[64px] z-30 bg-white/80 backdrop-blur-md border-b border-gray-200 shadow-sm transition-all">
         <div className="container mx-auto px-4 max-w-7xl h-16 flex items-center gap-4">
 
+          {/* Active City Filter Badge */}
+          {cityParam && (
+            <div className="hidden md:flex items-center bg-blue-50 border border-blue-200 text-blue-700 px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap">
+              <MapPin className="h-3.5 w-3.5 mr-1" />
+              {cityParam}
+              <Link to="/properties" className="ml-2 hover:bg-blue-100 rounded-full p-0.5">
+                <X className="h-3 w-3" />
+              </Link>
+            </div>
+          )}
+
           {/* Search Bar */}
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -300,6 +318,7 @@ const Properties = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Types</SelectItem>
+
               {PROPERTY_TYPES.map(t => (
                 <SelectItem key={t} value={t}>{t.toLowerCase().replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())}</SelectItem>
               ))}
@@ -400,87 +419,91 @@ const Properties = () => {
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredProperties.slice(0, visibleCount).map((property) => (
-                <Link
-                  to={`/property/${property.id}`}
-                  key={property.id}
-                  className="group flex flex-col bg-white rounded-[2rem] overflow-hidden border border-gray-100 hover:border-gray-200 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300"
-                >
-                  {/* Image Container */}
-                  <div className="relative aspect-[4/3] overflow-hidden bg-gray-200">
-                    <img
-                      src={getFullUrl(property.primaryImageUrl || property.images?.[0]) || 'https://images.unsplash.com/photo-1600596542815-2a4d04774c71?auto=format&fit=crop&q=80'}
-                      alt={property.title}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                    />
+              {filteredProperties.slice(0, visibleCount).map((property) => {
+                const citySlug = property.city?.toLowerCase().replace(/\s+/g, '-') || 'city';
+                const titleSlug = property.title?.toLowerCase().replace(/\s+/g, '-') || 'property';
+                return (
+                  <Link
+                    to={`/property/${titleSlug}/${citySlug}/${property.id}`}
+                    key={property.id}
+                    className="group flex flex-col bg-white rounded-[2rem] overflow-hidden border border-gray-100 hover:border-gray-200 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300"
+                  >
+                    {/* Image Container */}
+                    <div className="relative aspect-[4/3] overflow-hidden bg-gray-200">
+                      <img
+                        src={getFullUrl(property.primaryImageUrl || property.images?.[0]) || 'https://images.unsplash.com/photo-1600596542815-2a4d04774c71?auto=format&fit=crop&q=80'}
+                        alt={property.title}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      />
 
-                    {/* Gradient Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
+                      {/* Gradient Overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
 
-                    {/* Badges */}
-                    <div className="absolute top-4 left-4 flex gap-2">
-                      <Badge className="bg-white/95 backdrop-blur-md text-gray-900 border-0 shadow-sm px-3 py-1 text-xs font-semibold uppercase tracking-wider">
-                        {property.propertyType.replace('_', ' ')}
-                      </Badge>
-                    </div>
-                    <div className="absolute top-4 right-4">
-                      <Badge className={`${property.listingType === 'SALE' ? 'bg-emerald-500' : 'bg-blue-500'} text-white border-0 shadow-sm px-3 py-1 font-medium`}>
-                        {property.listingType}
-                      </Badge>
-                    </div>
-
-                    {/* Price Tag Overlay Container */}
-                    <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end">
-                      <div className="text-white">
-                        <p className="text-xl md:text-2xl font-bold drop-shadow-md">
-                          {['RENT', 'PG', 'COMMERCIAL_RENT'].includes(property.listingType)
-                            ? (property.monthlyRent ? `${formatPrice(property.monthlyRent)}/mo` : 'Price on Request')
-                            : formatPrice(property.basePrice)}
-                        </p>
+                      {/* Badges */}
+                      <div className="absolute top-4 left-4 flex gap-2">
+                        <Badge className="bg-white/95 backdrop-blur-md text-gray-900 border-0 shadow-sm px-3 py-1 text-xs font-semibold uppercase tracking-wider">
+                          {property.propertyType.replace('_', ' ')}
+                        </Badge>
                       </div>
-                    </div>
-                  </div>
+                      <div className="absolute top-4 right-4">
+                        <Badge className={`${property.listingType === 'SALE' ? 'bg-emerald-500' : 'bg-blue-500'} text-white border-0 shadow-sm px-3 py-1 font-medium`}>
+                          {property.listingType}
+                        </Badge>
+                      </div>
 
-                  {/* Card Details */}
-                  <div className="p-6 flex-1 flex flex-col">
-                    <div className="mb-4">
-                      <h3 className="text-lg font-bold text-gray-900 mb-1 line-clamp-1 group-hover:text-blue-600 transition-colors">
-                        {property.title}
-                      </h3>
-                      <div className="flex items-center text-gray-500 text-sm">
-                        <MapPin className="h-3.5 w-3.5 mr-1" />
-                        <p className="line-clamp-1">{property.formattedAddress || property.city}</p>
+                      {/* Price Tag Overlay Container */}
+                      <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end">
+                        <div className="text-white">
+                          <p className="text-xl md:text-2xl font-bold drop-shadow-md">
+                            {['RENT', 'PG', 'COMMERCIAL_RENT'].includes(property.listingType)
+                              ? (property.monthlyRent ? `${formatPrice(property.monthlyRent)}/mo` : 'Price on Request')
+                              : formatPrice(property.basePrice)}
+                          </p>
+                        </div>
                       </div>
                     </div>
 
-                    {/* Specs Grid */}
-                    <div className="grid grid-cols-3 gap-2 mb-6">
-                      <div className="bg-gray-50 rounded-2xl p-3 flex flex-col items-center justify-center text-center group-hover:bg-blue-50/50 transition-colors">
-                        <Bed className="h-5 w-5 text-gray-400 mb-1 group-hover:text-blue-500 transition-colors" />
-                        <span className="text-sm font-semibold text-gray-900">{property.bedrooms}</span>
-                        <span className="text-[10px] uppercase text-gray-400 font-medium tracking-wide">Beds</span>
+                    {/* Card Details */}
+                    <div className="p-6 flex-1 flex flex-col">
+                      <div className="mb-4">
+                        <h3 className="text-lg font-bold text-gray-900 mb-1 line-clamp-1 group-hover:text-blue-600 transition-colors">
+                          {property.title}
+                        </h3>
+                        <div className="flex items-center text-gray-500 text-sm">
+                          <MapPin className="h-3.5 w-3.5 mr-1" />
+                          <p className="line-clamp-1">{property.formattedAddress || property.city}</p>
+                        </div>
                       </div>
-                      <div className="bg-gray-50 rounded-2xl p-3 flex flex-col items-center justify-center text-center group-hover:bg-blue-50/50 transition-colors">
-                        <Bath className="h-5 w-5 text-gray-400 mb-1 group-hover:text-blue-500 transition-colors" />
-                        <span className="text-sm font-semibold text-gray-900">{property.bathrooms}</span>
-                        <span className="text-[10px] uppercase text-gray-400 font-medium tracking-wide">Baths</span>
-                      </div>
-                      <div className="bg-gray-50 rounded-2xl p-3 flex flex-col items-center justify-center text-center group-hover:bg-blue-50/50 transition-colors">
-                        <Square className="h-5 w-5 text-gray-400 mb-1 group-hover:text-blue-500 transition-colors" />
-                        <span className="text-sm font-semibold text-gray-900">{property.carpetArea}</span>
-                        <span className="text-[10px] uppercase text-gray-400 font-medium tracking-wide">Sqft</span>
-                      </div>
-                    </div>
 
-                    <div className="mt-auto pt-4 border-t border-gray-50 flex items-center justify-between text-sm">
-                      <span className="text-gray-400 font-medium">{property.isVerified ? 'Verified Listing' : 'New Listing'}</span>
-                      <div className="flex items-center text-blue-600 font-semibold group-hover:translate-x-1 transition-transform cursor-pointer">
-                        View Details <ArrowRight className="h-4 w-4 ml-1" />
+                      {/* Specs Grid */}
+                      <div className="grid grid-cols-3 gap-2 mb-6">
+                        <div className="bg-gray-50 rounded-2xl p-3 flex flex-col items-center justify-center text-center group-hover:bg-blue-50/50 transition-colors">
+                          <Bed className="h-5 w-5 text-gray-400 mb-1 group-hover:text-blue-500 transition-colors" />
+                          <span className="text-sm font-semibold text-gray-900">{property.bedrooms}</span>
+                          <span className="text-[10px] uppercase text-gray-400 font-medium tracking-wide">Beds</span>
+                        </div>
+                        <div className="bg-gray-50 rounded-2xl p-3 flex flex-col items-center justify-center text-center group-hover:bg-blue-50/50 transition-colors">
+                          <Bath className="h-5 w-5 text-gray-400 mb-1 group-hover:text-blue-500 transition-colors" />
+                          <span className="text-sm font-semibold text-gray-900">{property.bathrooms}</span>
+                          <span className="text-[10px] uppercase text-gray-400 font-medium tracking-wide">Baths</span>
+                        </div>
+                        <div className="bg-gray-50 rounded-2xl p-3 flex flex-col items-center justify-center text-center group-hover:bg-blue-50/50 transition-colors">
+                          <Square className="h-5 w-5 text-gray-400 mb-1 group-hover:text-blue-500 transition-colors" />
+                          <span className="text-sm font-semibold text-gray-900">{property.carpetArea}</span>
+                          <span className="text-[10px] uppercase text-gray-400 font-medium tracking-wide">Sqft</span>
+                        </div>
+                      </div>
+
+                      <div className="mt-auto pt-4 border-t border-gray-50 flex items-center justify-between text-sm">
+                        <span className="text-gray-400 font-medium">{property.isVerified ? 'Verified Listing' : 'New Listing'}</span>
+                        <div className="flex items-center text-blue-600 font-semibold group-hover:translate-x-1 transition-transform cursor-pointer">
+                          View Details <ArrowRight className="h-4 w-4 ml-1" />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </Link>
-              ))}
+                  </Link>
+                );
+              })}
             </div>
 
             {/* View More Button */}

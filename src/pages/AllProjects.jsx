@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { MapPin, Calendar, Tag } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -9,6 +9,9 @@ import SEO from '../components/SEO';
 
 const AllProjects = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const cityParam = searchParams.get('city');
+
     const [projects, setProjects] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -46,11 +49,11 @@ const AllProjects = () => {
             queryParams += `&sortBy=${sortBy}&sortDir=${sortDir}`;
 
             // Filter Logic
-            // Note: Backend filter seems unresponsive, so we apply client-side filtering as a fallback
-            // We increase page size to ensure we get enough candidates to filter
             if (type) {
-                // queryParams += `&projectType=${type}`; // Keeping this for when backend is fixed
                 queryParams = queryParams.replace('size=15', 'size=100');
+            }
+            if (cityParam) {
+                queryParams += `&city=${encodeURIComponent(cityParam)}`;
             }
 
             const response = await fetch(`${API_BASE_URL}/api/v1/properties/projects?${queryParams}`);
@@ -204,7 +207,11 @@ const AllProjects = () => {
                             <div
                                 key={project.id}
                                 className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 group cursor-pointer flex flex-col"
-                                onClick={() => navigate(`/projects/${project.id}`)}
+                                onClick={() => {
+                                    const citySlug = project.city?.toLowerCase().replace(/\s+/g, '-') || 'city';
+                                    const titleSlug = project.name?.toLowerCase().replace(/\s+/g, '-') || 'project';
+                                    navigate(`/projects/${titleSlug}/${citySlug}/${project.id}`);
+                                }}
                             >
                                 {/* Image Container */}
                                 <div className="relative h-64 overflow-hidden">
