@@ -173,7 +173,7 @@ const CompanyProperties = () => {
                                                         <Button
                                                             variant="ghost"
                                                             size="sm"
-                                                            onClick={() => navigate(`/property/${property.id}`)}
+                                                            onClick={() => navigate(`/property/${encodeURIComponent(property.title)}/${encodeURIComponent(property.city || 'all')}/${property.id}`)}
                                                             title="View Details"
                                                         >
                                                             <Eye className="w-4 h-4 text-blue-600" />
@@ -223,7 +223,7 @@ const CompanyProperties = () => {
                                             <Button
                                                 variant="outline"
                                                 size="sm"
-                                                onClick={() => navigate(`/property/${property.id}`)}
+                                                onClick={() => navigate(`/property/${encodeURIComponent(property.title)}/${encodeURIComponent(property.city || 'all')}/${property.id}`)}
                                                 className="w-full"
                                             >
                                                 <Eye className="w-4 h-4 mr-2" />

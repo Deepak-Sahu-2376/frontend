@@ -122,7 +122,7 @@ const PropertyCard = ({ property = defaultProperty }) => {
         {/* Actions */}
         <div className="flex justify-between space-x-2 mt-4">
           <Link
-            to={`/properties/${id}`}
+            to={`/property/${encodeURIComponent(title || 'property')}/${encodeURIComponent(city || 'all')}/${id}`}
             className="flex-grow text-center py-2 text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 rounded-md transition duration-200"
           >
             View Details

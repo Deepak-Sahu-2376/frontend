@@ -146,7 +146,7 @@ const AgentInquiries = () => {
                                                         size="sm"
                                                         variant="outline"
                                                         className="h-8"
-                                                        onClick={() => navigate(`/property/${inquiry.propertyId}`)}
+                                                        onClick={() => navigate(`/property/${encodeURIComponent(inquiry.property?.title || 'property')}/${encodeURIComponent(inquiry.property?.city || 'all')}/${inquiry.propertyId}`)}
                                                     >
                                                         View Property
                                                     </Button>

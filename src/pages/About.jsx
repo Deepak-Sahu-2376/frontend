@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import { CheckCircle, Award, Clock, Star, Users, Briefcase, Target, Phone } from "lucide-react";
 import { Button } from "../components/ui/button.jsx";
 import SEO from "../components/SEO";
 import { Link } from "react-router-dom";
 
 export function About() {
+  const [videoError, setVideoError] = useState(false);
+
   const features = [
     "25+ years of industry experience",
     "Licensed real estate professionals",
@@ -84,16 +86,25 @@ export function About() {
           </div>
           {/* Video Section moved here for better layout */}
           <div className="relative rounded-2xl shadow-2xl overflow-hidden aspect-video">
-            <video
-              className="w-full h-full object-cover"
-              src="/assets/video/deshrock.mp4"
-              autoPlay
-              loop
-              muted
-              playsInline
-            >
-              Your browser does not support the video tag.
-            </video>
+            {videoError ? (
+              <img
+                src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80"
+                alt="Office Environment"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <video
+                className="w-full h-full object-cover"
+                src="/assets/video/deshrock.mp4"
+                autoPlay
+                loop
+                muted
+                playsInline
+                onError={() => setVideoError(true)}
+              >
+                Your browser does not support the video tag.
+              </video>
+            )}
             <div className="absolute inset-0 bg-black/20"></div>
           </div>
         </div>

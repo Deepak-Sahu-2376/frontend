@@ -179,7 +179,7 @@ const AdminProjects = () => {
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    onClick={() => navigate(`/projects/${project.id}`)}
+                                                    onClick={() => navigate(`/projects/${encodeURIComponent(project.name)}/${encodeURIComponent(project.city || 'all')}/${project.id}`)}
                                                     title="View"
                                                 >
                                                     <Eye className="w-4 h-4" />
@@ -252,7 +252,7 @@ const AdminProjects = () => {
                                         variant="outline"
                                         className="w-full text-blue-700 border-blue-200 hover:bg-blue-50"
                                         size="sm"
-                                        onClick={() => navigate(`/projects/${project.id}`)}
+                                        onClick={() => navigate(`/projects/${encodeURIComponent(project.name)}/${encodeURIComponent(project.city || 'all')}/${project.id}`)}
                                     >
                                         <Eye className="w-4 h-4 mr-2" />
                                         View Project

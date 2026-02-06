@@ -53,8 +53,8 @@ const FeaturedPropertiesSection = () => {
           const mappedProps = fetchedProps.map(p => ({
             id: p.id,
             title: p.title,
-            price: formatPrice(p.basePrice),
-            location: p.formattedAddress || p.city, // Prefer formatted address
+            city: p.city || 'all',
+            price: formatPrice((p.listingType === 'RENT' ? p.monthlyRent : p.basePrice) || p.price), location: p.formattedAddress || p.city, // Prefer formatted address
             featureTag: p.isFeatured ? "Featured" : (p.isVerified ? "Verified" : "New"),
             premiumTag: p.listingType === 'SALE' ? "For Sale" : "For Rent",
             image: getImageUrl(p.primaryImageUrl || p.images?.[0])
@@ -167,14 +167,7 @@ const FeaturedPropertiesSection = () => {
   }
 
   if (properties.length === 0) {
-    return (
-      <section className="py-20 bg-[#f7f7f7]">
-        <div className="max-w-7xl mx-auto px-6 text-center">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">Featured Properties</h2>
-          <p className="text-gray-500">Check back later for our featured listings.</p>
-        </div>
-      </section>
-    );
+    return null;
   }
 
   // Calculate max slides for dots
@@ -284,17 +277,12 @@ const FeaturedPropertiesSection = () => {
                     {/* Buttons */}
                     <div className="mt-5 flex items-center gap-3">
                       <button
-                        onClick={() => navigate(`/property/${p.id}`)}
+                        onClick={() => navigate(`/property/${encodeURIComponent(p.title)}/${encodeURIComponent(p.city)}/${p.id}`)}
                         className="bg-[#a87a4c] hover:bg-[#906636] text-white px-4 py-2 rounded-md w-full transition-colors"
                       >
                         View Details
                       </button>
-                      <button
-                        onClick={() => toast.success("Property saved!")}
-                        className="border border-[#a87a4c] text-[#a87a4c] px-4 py-2 rounded-md hover:bg-[#a87a4c] hover:text-white transition-colors"
-                      >
-                        Save
-                      </button>
+
                     </div>
                   </div>
                 </div>

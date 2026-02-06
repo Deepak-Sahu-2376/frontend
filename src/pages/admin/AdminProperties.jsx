@@ -1,4 +1,5 @@
 import { Button } from '../../components/ui/button';
+import { API_BASE_URL } from '../../utils/apiClient';
 import { Eye, Pencil, Trash } from 'lucide-react';
 import { useAdmin } from '../../contexts/AdminContext';
 import { useNavigate } from 'react-router-dom';
@@ -40,7 +41,7 @@ const AdminProperties = () => {
         const id = itemToDelete.id;
         try {
             const token = localStorage.getItem('adminAccessToken');
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/v1/properties/${id}`, {
+            const response = await fetch(`${API_BASE_URL}/api/v1/properties/${id}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -110,11 +111,10 @@ const AdminProperties = () => {
                                     <td className="px-6 py-4 text-gray-600">{property.propertyType || property.type}</td>
                                     <td className="px-6 py-4">
                                         <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusColor(property.verificationStatus || property.status)}`}>
-                                            {property.verificationStatus || property.status}
+                                        {property.verificationStatus || property.status}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 text-gray-900 font-medium">{formatPrice(property.basePrice || property.monthlyRent || property.price)}</td>
-                                    <td className="px-6 py-4">
+                                    <td className="px-6 py-4 text-gray-900 font-medium">{formatPrice((property.listingType === 'RENT' ? property.monthlyRent : property.basePrice) || property.price)}</td>                                    <td className="px-6 py-4">
                                         <div className="flex items-center space-x-2">
                                             {(property.verificationStatus || property.status) === 'PENDING' ? (
                                                 <>
@@ -140,7 +140,7 @@ const AdminProperties = () => {
                                                 size="sm"
                                                 variant="ghost"
                                                 className="h-7 w-7 p-0 text-blue-600 hover:bg-blue-50"
-                                                onClick={() => navigate(`/property/${property.id}`)}
+                                                onClick={() => navigate(`/property/${encodeURIComponent(property.title)}/${encodeURIComponent(property.city || 'all')}/${property.id}`)}
                                                 title="View"
                                             >
                                                 <Eye className="h-4 w-4" />
@@ -234,7 +234,7 @@ const AdminProperties = () => {
                                     size="sm"
                                     variant="outline"
                                     className="flex-1 text-blue-600 hover:bg-blue-50 border-blue-200"
-                                    onClick={() => navigate(`/property/${property.id}`)}
+                                    onClick={() => navigate(`/property/${encodeURIComponent(property.title)}/${encodeURIComponent(property.city || 'all')}/${property.id}`)}
                                 >
                                     View Details
                                 </Button>

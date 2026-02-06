@@ -77,22 +77,7 @@ const Navbar = () => {
             { name: 'Training centers', path: '/properties?type=TRAINING_CENTER' },
           ]
         },
-        {
-          name: 'Industrial',
-          path: '/properties?type=INDUSTRIAL',
-          subItems: [
-            { name: 'Warehouse', path: '/properties?type=WAREHOUSE' },
-            { name: 'Cold storage', path: '/properties?type=COLD_STORAGE' },
-            { name: 'Distribution centers', path: '/properties?type=DISTRIBUTION_CENTER' },
-            { name: 'Factories / Manufacturing plants', path: '/properties?type=FACTORY' },
-            { name: 'Logistics facilities', path: '/properties?type=LOGISTICS' },
-            { name: 'Industrial land', path: '/properties?type=INDUSTRIAL_LAND' },
-            { name: 'Data centers', path: '/properties?type=DATA_CENTER' },
-            { name: 'Research & development (R&D) facilities', path: '/properties?type=R_AND_D' },
-            { name: 'Showrooms with storage (flex spaces)', path: '/properties?type=SHOWROOM_STORAGE' },
-          ]
-        },
-        { name: 'Free Zone', path: '/properties?type=FREE_ZONE' }
+
       ]
     },
     { name: 'Projects', path: '/projects' },
@@ -193,6 +178,15 @@ const Navbar = () => {
             {user?.userType === 'BUYER' && (
               <Link
                 to="/buyer/post-property"
+                className={`px-4 py-2 bg-white border border-[#A17F5A] hover:bg-[#A17F5A] text-[#A17F5A] hover:text-white text-sm font-medium transition-all duration-500 ease-in-out ${isScrolled ? 'rounded-full' : 'rounded-md'}`}
+              >
+                + Post Property
+              </Link>
+            )}
+
+            {!isAuthenticated && (
+              <Link
+                to="/sign-in"
                 className={`px-4 py-2 bg-white border border-[#A17F5A] hover:bg-[#A17F5A] text-[#A17F5A] hover:text-white text-sm font-medium transition-all duration-500 ease-in-out ${isScrolled ? 'rounded-full' : 'rounded-md'}`}
               >
                 + Post Property
@@ -340,6 +334,15 @@ const Navbar = () => {
                   {user?.userType === 'BUYER' && (
                     <Link
                       to="/buyer/post-property"
+                      className="text-lg font-medium text-gray-600 hover:text-orange-600"
+                    >
+                      + Post Property
+                    </Link>
+                  )}
+
+                  {!isAuthenticated && (
+                    <Link
+                      to="/sign-in"
                       className="text-lg font-medium text-gray-600 hover:text-orange-600"
                     >
                       + Post Property

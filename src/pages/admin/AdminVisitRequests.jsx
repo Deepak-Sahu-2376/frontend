@@ -305,7 +305,7 @@ const AdminVisitRequests = () => {
                                             size="sm"
                                             variant="outline"
                                             className="h-8"
-                                            onClick={() => navigate(`/property/${request.propertyId}`)}
+                                            onClick={() => navigate(`/property/${encodeURIComponent(request.property?.title || 'property')}/${encodeURIComponent(request.property?.city || 'all')}/${request.propertyId}`)}
                                         >
                                             View
                                         </Button>

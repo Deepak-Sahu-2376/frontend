@@ -422,7 +422,17 @@ const UserProfile = () => {
                             ) : visits.length > 0 ? (
                                 <div className="space-y-4">
                                     {visits.map((visit) => (
-                                        <div key={visit.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border rounded-lg bg-white hover:shadow-md transition-shadow">
+                                        <div
+                                            key={visit.id}
+                                            className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border rounded-lg bg-white hover:shadow-md transition-shadow cursor-pointer"
+                                            onClick={() => {
+                                                if (visit.property) {
+                                                    const title = encodeURIComponent(visit.property.title || 'property');
+                                                    const city = encodeURIComponent(visit.property.city || 'all');
+                                                    navigate(`/property/${title}/${city}/${visit.property.id}`);
+                                                }
+                                            }}
+                                        >
                                             <div className="mb-2 sm:mb-0">
                                                 <h4 className="font-semibold text-gray-900">{visit.property?.title || `Property #${visit.propertyId}`}</h4>
                                                 <div className="flex flex-col sm:flex-row sm:items-center text-sm text-gray-500 mt-1 gap-2 sm:gap-4">
@@ -444,7 +454,10 @@ const UserProfile = () => {
                                                         variant="ghost"
                                                         size="sm"
                                                         className="mt-2 h-auto p-0 text-red-600 hover:text-red-700 hover:bg-transparent font-normal flex items-center"
-                                                        onClick={() => openCancelDialog(visit.id)}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            openCancelDialog(visit.id);
+                                                        }}
                                                     >
                                                         <XCircle className="w-4 h-4 mr-1" />
                                                         Cancel Visit
@@ -491,7 +504,15 @@ const UserProfile = () => {
                             ) : myProperties.length > 0 ? (
                                 <div className="space-y-4">
                                     {myProperties.map((property) => (
-                                        <div key={property.id} className="flex flex-col sm:flex-row items-center justify-between p-4 border rounded-lg bg-white hover:shadow-md transition-shadow">
+                                        <div
+                                            key={property.id}
+                                            className="flex flex-col sm:flex-row items-center justify-between p-4 border rounded-lg bg-white hover:shadow-md transition-shadow cursor-pointer"
+                                            onClick={() => {
+                                                const title = encodeURIComponent(property.title || 'property');
+                                                const city = encodeURIComponent(property.city || 'all');
+                                                navigate(`/property/${title}/${city}/${property.id}`);
+                                            }}
+                                        >
                                             <div className="flex items-center gap-4 mb-2 sm:mb-0 w-full sm:w-auto">
                                                 <div className="h-16 w-16 bg-gray-100 rounded-md overflow-hidden flex-shrink-0">
                                                     {property.primaryImageUrl || property.images?.[0] ? (
@@ -556,7 +577,17 @@ const UserProfile = () => {
                             ) : receivedVisits.length > 0 ? (
                                 <div className="space-y-4">
                                     {receivedVisits.map((visit) => (
-                                        <div key={visit.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border rounded-lg bg-white hover:shadow-md transition-shadow">
+                                        <div
+                                            key={visit.id}
+                                            className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border rounded-lg bg-white hover:shadow-md transition-shadow cursor-pointer"
+                                            onClick={() => {
+                                                if (visit.property) {
+                                                    const title = encodeURIComponent(visit.property.title || 'property');
+                                                    const city = encodeURIComponent(visit.property.city || 'all');
+                                                    navigate(`/property/${title}/${city}/${visit.property.id}`);
+                                                }
+                                            }}
+                                        >
                                             <div className="mb-2 sm:mb-0">
                                                 <h4 className="font-semibold text-gray-900">{visit.property?.title || `Property #${visit.propertyId}`}</h4>
                                                 <div className="flex flex-col sm:flex-row sm:items-center text-sm text-gray-500 mt-1 gap-2 sm:gap-4">
@@ -607,7 +638,17 @@ const UserProfile = () => {
                             ) : receivedInquiries.length > 0 ? (
                                 <div className="space-y-4">
                                     {receivedInquiries.map((inquiry) => (
-                                        <div key={inquiry.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border rounded-lg bg-white hover:shadow-md transition-shadow">
+                                        <div
+                                            key={inquiry.id}
+                                            className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border rounded-lg bg-white hover:shadow-md transition-shadow cursor-pointer"
+                                            onClick={() => {
+                                                if (inquiry.property) {
+                                                    const title = encodeURIComponent(inquiry.property.title || 'property');
+                                                    const city = encodeURIComponent(inquiry.property.city || 'all');
+                                                    navigate(`/property/${title}/${city}/${inquiry.property.id}`);
+                                                }
+                                            }}
+                                        >
                                             <div className="mb-2 sm:mb-0">
                                                 <h4 className="font-semibold text-gray-900">{inquiry.property?.title || "Property Inquiry"}</h4>
                                                 <div className="text-sm text-gray-600 mt-1">
@@ -616,7 +657,14 @@ const UserProfile = () => {
                                                 <p className="text-sm text-gray-500 italic mt-1">"{inquiry.message}"</p>
                                                 <p className="text-xs text-gray-400 mt-1">{new Date(inquiry.createdAt).toLocaleDateString()}</p>
                                             </div>
-                                            <Button variant="outline" size="sm" onClick={() => window.location.href = `mailto:${inquiry.email}`}>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    window.location.href = `mailto:${inquiry.email}`;
+                                                }}
+                                            >
                                                 Reply
                                             </Button>
                                         </div>

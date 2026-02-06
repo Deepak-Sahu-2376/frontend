@@ -1,5 +1,5 @@
 import React, { useEffect, Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route, Outlet, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Outlet, useLocation, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
 
@@ -184,6 +184,8 @@ function App() {
                 {/* Public Routes */}
                 <Route element={<PublicLayout />}>
                   <Route path="/" element={<Home />} />
+                  <Route path="/Home" element={<Navigate to="/" replace />} />
+                  <Route path="/home" element={<Navigate to="/" replace />} />
                   <Route path="/properties" element={<Properties />} />
                   <Route path="/projects" element={<AllProjects />} />
                   <Route path="/projects/:title/:city/:id" element={<ProjectDetails />} />

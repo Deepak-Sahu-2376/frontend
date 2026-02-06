@@ -34,6 +34,7 @@ const TopPicksSection = () => {
           const mappedProps = fetchedProjects.map(p => ({
             id: p.id,
             title: p.name,
+            city: p.city || 'all',
             price: p.formattedPriceRange || formatPrice(p.startingPrice),
             location: p.city || p.formattedAddress,
             beds: '3-4 BHK', // Hardcoded per user description implication, or could use p.description parsing if needed. 
@@ -233,7 +234,7 @@ const TopPicksSection = () => {
                       )}
 
                       <button
-                        onClick={() => navigate(`/projects/${property.id}`)}
+                        onClick={() => navigate(`/projects/${encodeURIComponent(property.title)}/${encodeURIComponent(property.city)}/${property.id}`)}
                         className="w-full md:w-auto bg-[#A1734A] text-white px-6 py-3 rounded-md font-semibold hover:bg-[#8a623e] transition-colors"
                       >
                         View Project Details
@@ -284,6 +285,7 @@ const TopPicksSection = () => {
           ))}
         </div>
 
+
         {/* View All Button */}
         <div className="flex justify-center mt-12">
           <button
@@ -294,7 +296,7 @@ const TopPicksSection = () => {
           </button>
         </div>
       </div>
-    </section>
+    </section >
   );
 };
 

@@ -104,12 +104,15 @@ const AdminPendingProperties = () => {
         setActionLoading(true);
         try {
             const token = localStorage.getItem('adminAccessToken');
-            const response = await fetch(`${API_BASE_URL}/api/v1/properties/${selectedPropertyId}/reject?reason=${encodeURIComponent(rejectionReason)}`, {
+            // Move reason from query param to body
+            const response = await fetch(`${API_BASE_URL}/api/v1/properties/${selectedPropertyId}/reject`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
                     'Accept': 'application/json'
-                }
+                },
+                body: JSON.stringify({ reason: rejectionReason })
             });
 
             if (response.ok) {

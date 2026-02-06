@@ -74,6 +74,21 @@ const CreateProject = () => {
         }
     }, [id]);
 
+    // Automatically calculate Average Price
+    useEffect(() => {
+        const min = parseFloat(formData.startingPrice);
+        const max = parseFloat(formData.priceRangeMax);
+
+        if (!isNaN(min) && !isNaN(max) && min > 0 && max > 0) {
+            const avg = Math.floor((min + max) / 2);
+            setFormData(prev => {
+                // Prevent unnecessary updates
+                if (prev.avgPrice === String(avg)) return prev;
+                return { ...prev, avgPrice: String(avg) };
+            });
+        }
+    }, [formData.startingPrice, formData.priceRangeMax]);
+
     const fetchProjectDetails = async () => {
         try {
             // Fetch project details. Assuming generic getProjectById endpoint works without auth header for public checks BUT likely need admin token for Admin view if restricted.
@@ -143,7 +158,7 @@ const CreateProject = () => {
 
     const projectTypes = [
         'APARTMENT', 'VILLA', 'PLOT', 'OFFICE', 'SHOP', 'WAREHOUSE', 'HOTEL', 'FARMHOUSE',
-        'STUDIO', 'PENTHOUSE', 'INDEPENDENT_HOUSE', 'COMMERCIAL', 'LAND', 'RESIDENTIAL'
+        'STUDIO', 'PENTHOUSE', 'INDEPENDENT_HOUSE', 'COMMERCIAL', 'LAND', 'RESIDENTIAL', 'INDEPENDENT FLOORS', 'other'
     ];
 
     const mediaCategories = [

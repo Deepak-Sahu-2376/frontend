@@ -227,9 +227,7 @@ const AllProjects = () => {
                                         {project.projectType}
                                     </div>
                                     {/* Status Badge */}
-                                    <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs font-semibold text-white shadow-sm">
-                                        {project.status}
-                                    </div>
+
                                 </div>
 
                                 {/* Content */}

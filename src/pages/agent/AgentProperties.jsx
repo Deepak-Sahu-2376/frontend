@@ -72,7 +72,7 @@ const AgentProperties = () => {
                                                         size="sm"
                                                         variant="ghost"
                                                         className="h-7 w-7 p-0 text-blue-600 hover:bg-blue-50"
-                                                        onClick={() => navigate(`/property/${property.id}`)}
+                                                        onClick={() => navigate(`/property/${encodeURIComponent(property.title)}/${encodeURIComponent(property.city || 'all')}/${property.id}`)}
                                                     >
                                                         <Eye className="h-4 w-4" />
                                                     </Button>
@@ -122,7 +122,7 @@ const AgentProperties = () => {
                                             size="sm"
                                             variant="outline"
                                             className="w-full text-blue-600 hover:bg-blue-50 border-blue-200"
-                                            onClick={() => navigate(`/property/${property.id}`)}
+                                            onClick={() => navigate(`/property/${encodeURIComponent(property.title)}/${encodeURIComponent(property.city || 'all')}/${property.id}`)}
                                         >
                                             View Details
                                         </Button>

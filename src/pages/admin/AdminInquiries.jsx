@@ -152,9 +152,9 @@ const AdminInquiries = () => {
                                                     className="h-8"
                                                     onClick={() => {
                                                         if (inquiry.property) {
-                                                            navigate(`/property/${inquiry.property.id}`);
+                                                            navigate(`/property/${encodeURIComponent(inquiry.property.title || 'property')}/${encodeURIComponent(inquiry.property.city || 'all')}/${inquiry.property.id}`);
                                                         } else if (inquiry.project) {
-                                                            navigate(`/projects/${inquiry.project.id}`);
+                                                            navigate(`/projects/${encodeURIComponent(inquiry.project.name || 'project')}/${encodeURIComponent(inquiry.project.city || 'all')}/${inquiry.project.id}`);
                                                         }
                                                     }}
                                                     disabled={!inquiry.property && !inquiry.project}

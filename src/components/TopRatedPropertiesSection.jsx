@@ -67,8 +67,8 @@ const TopRatedPropertiesSection = () => {
           const mappedProps = fetchedProps.map(p => ({
             id: p.id,
             title: p.title,
-            price: formatPrice(p.basePrice || p.price),
-            location: p.formattedAddress || p.address?.city || p.city || "Unknown Location",
+            city: p.city || 'all',
+            price: formatPrice((p.listingType === 'RENT' ? p.monthlyRent : p.basePrice) || p.price), location: p.formattedAddress || p.address?.city || p.city || "Unknown Location",
             featureTag: "Top Rated",
             premiumTag: p.listingType === 'SALE' ? "For Sale" : "For Rent",
             image: getImageUrl(p.primaryImageUrl || p.images?.[0]) || 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&q=80&w=1000',
@@ -179,16 +179,7 @@ const TopRatedPropertiesSection = () => {
   }
 
   if (properties.length === 0) {
-    return (
-      <section className="py-20 bg-[#f7f7f7]">
-        <div className="max-w-7xl mx-auto px-6 text-center">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4 flex items-center justify-center gap-2">
-            <span className="text-[#a87a4c] text-3xl">🏆</span> Top Rated Properties
-          </h2>
-          <p className="text-gray-500">No top rated properties found at the moment.</p>
-        </div>
-      </section>
-    );
+    return null;
   }
 
   // Calculate max slides for dots
@@ -283,17 +274,12 @@ const TopRatedPropertiesSection = () => {
                     {/* Buttons */}
                     <div className="mt-5 flex gap-3">
                       <button
-                        onClick={() => navigate(`/property/${p.id}`)}
+                        onClick={() => navigate(`/property/${encodeURIComponent(p.title)}/${encodeURIComponent(p.city)}/${p.id}`)}
                         className="bg-[#a87a4c] text-white px-4 py-2 rounded-md w-full hover:bg-[#906636] transition-colors"
                       >
                         View Details
                       </button>
-                      <button
-                        onClick={() => toast.success("Property saved!")}
-                        className="border border-[#a87a4c] text-[#a87a4c] px-4 py-2 rounded-md hover:bg-[#a87a4c] hover:text-white transition-colors"
-                      >
-                        Save
-                      </button>
+
                     </div>
                   </div>
                 </div>

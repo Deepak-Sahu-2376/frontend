@@ -123,7 +123,7 @@ const CompanyProjects = () => {
                                                     className={`text-blue-600 hover:text-blue-700 hover:bg-blue-50 ${!isApproved(project) ? 'cursor-not-allowed opacity-50' : ''}`}
                                                     onClick={() => {
                                                         if (isApproved(project)) {
-                                                            navigate(`/projects/${project.id}`);
+                                                            navigate(`/projects/${encodeURIComponent(project.name)}/${encodeURIComponent(project.city || 'all')}/${project.id}`);
                                                         } else {
                                                             toast.error("Project is not Approved");
                                                         }

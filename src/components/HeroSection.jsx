@@ -38,16 +38,11 @@ const HeroSection = () => {
 
       {/* Background Video */}
       <div className="absolute inset-0 w-full h-full z-0">
-        <video
+        <img
+          src="/assets/hero_bg.png"
+          alt="Hero Background"
           className="w-full h-full object-cover"
-          autoPlay
-          loop
-          muted
-          playsInline
-        >
-          <source src="/assets/video/heroSection.mp4" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
+        />
         {/* Overlay */}
         <div className="absolute inset-0 bg-black/40"></div>
       </div>

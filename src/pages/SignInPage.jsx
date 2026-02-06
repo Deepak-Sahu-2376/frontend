@@ -134,57 +134,70 @@ export function SignInPage() {
         const savedUser = localStorage.getItem("brickbroker_user");
         const userData = savedUser ? JSON.parse(savedUser) : null;
 
-        // Normalize userType for comparison (handle potential case variants)
+        // Normalize userType for comparison
         const userType = userData?.userType?.toLowerCase();
 
-        // strict Role Access Control
-        if (selectedRole === 'company') {
-          if (userType === 'company' || userType === 'company_admin' || userType === 'company_agent') {
-            // Save Company Token for dedicated session
-            const token = localStorage.getItem('accessToken');
+        // Common token setup
+        const token = localStorage.getItem('accessToken');
+
+        // Smart Redirection Logic
+        if (['company', 'company_admin'].includes(userType)) {
+          // Company User -> Company Panel
+          localStorage.setItem('companyAccessToken', token);
+          localStorage.setItem('company_user_data', savedUser);
+          localStorage.setItem('company_auth', 'true');
+          toast.success("Welcome to Company Portal!");
+          navigate('/company');
+        }
+        else if (['agent'].includes(userType)) {
+          // Agent -> Agent Panel
+          localStorage.setItem('agentAccessToken', token);
+          localStorage.setItem('agent_user_data', savedUser);
+          localStorage.setItem('agent_auth', 'true');
+          toast.success("Welcome to Agent Portal!");
+          navigate('/agent');
+        }
+        else if (userType === 'company_agent') {
+          // Company Agent -> content-aware redirection
+          // If they explicitly chose "Company" tab, send them to Company (if they have dual access)
+          // Otherwise default to Agent panel which is their primary workspace
+          if (selectedRole === 'company') {
             localStorage.setItem('companyAccessToken', token);
             localStorage.setItem('company_user_data', savedUser);
             localStorage.setItem('company_auth', 'true');
-
-            toast.success("Welcome back!");
+            toast.success("Welcome to Company Portal!");
             navigate('/company');
           } else {
-            await logout(); // Boot them out
-            toast.error("Access denied. This portal is for Companies only.");
-            setFormData({ identifier: "", password: "", rememberMe: false });
-          }
-        }
-        else if (selectedRole === 'agent') {
-          if (userType === 'agent' || userType === 'company_agent') {
-            // Save Agent Token for dedicated session
-            const token = localStorage.getItem('accessToken');
             localStorage.setItem('agentAccessToken', token);
             localStorage.setItem('agent_user_data', savedUser);
             localStorage.setItem('agent_auth', 'true');
-
-            toast.success("Welcome back!");
+            toast.success("Welcome to Agent Portal!");
             navigate('/agent');
-          } else {
-            await logout();
-            toast.error("Access denied. This portal is for Agents only.");
-            setFormData({ identifier: "", password: "", rememberMe: false });
           }
         }
-        else { // Buyer
-          if (userType === 'buyer') {
-            toast.success("Welcome back!");
-            navigate('/');
-          } else {
-            await logout();
-            toast.error("Access denied. This portal is for Buyers only.");
-            setFormData({ identifier: "", password: "", rememberMe: false });
-          }
+        else if (userType === 'buyer') {
+          // Buyer -> Home
+          toast.success("Welcome back!");
+          navigate('/');
         }
+        else if (userType === 'admin') {
+          // Admin -> Admin Panel (Just in case admin logs in here)
+          toast.success("Welcome Admin!");
+          navigate('/admin');
+        }
+        else {
+          // Fallback for unknown roles or if userType is missing
+          // If they are authenticated but role is weird, send to home
+          toast.success("Welcome back!");
+          navigate('/');
+        }
+
       } else {
         toast.error("Invalid credentials");
       }
     } catch (error) {
-      toast.error("An error occurred");
+      console.error(error);
+      toast.error("An error occurred during login");
     } finally {
       setLoading(false);
     }

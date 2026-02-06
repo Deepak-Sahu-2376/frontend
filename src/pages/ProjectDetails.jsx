@@ -414,13 +414,6 @@ const ProjectDetails = () => {
                                     ₹{project.pricePerSqft || 'N/A'}/sq.ft
                                 </p>
                             </div>
-                            <div>
-                                <p className="text-sm text-gray-500 mb-1">Size Range</p>
-                                <p className="font-semibold text-gray-900 flex items-center gap-2">
-                                    <Maximize2 className="w-4 h-4 text-gray-400" />
-                                    {project.sizeRange}
-                                </p>
-                            </div>
                         </div>
 
                         {/* Description */}
@@ -521,10 +514,7 @@ const ProjectDetails = () => {
                         <div className="py-8 border-t border-gray-100">
                             <h2 className="text-2xl font-bold text-gray-900 mb-6">Project Details</h2>
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-y-6 gap-x-12">
-                                <div>
-                                    <p className="text-sm text-gray-500 mb-1">Total Area</p>
-                                    <p className="font-medium text-gray-900">{project.totalArea || 'N/A'}</p>
-                                </div>
+
                                 <div>
                                     <p className="text-sm text-gray-500 mb-1">Units</p>
                                     <p className="font-medium text-gray-900">{project.totalUnits} Units</p>

@@ -560,7 +560,24 @@ export function SignUpPage() {
             const loginSuccess = await login(formData.email, formData.password);
 
             if (loginSuccess) {
-              navigate('/sign-in'); // Redirect user after successful registration
+              const token = localStorage.getItem("accessToken");
+              const savedUser = localStorage.getItem("brickbroker_user");
+
+              // Set Company Context Tokens
+              localStorage.setItem('companyAccessToken', token);
+              localStorage.setItem('company_user_data', savedUser);
+              localStorage.setItem('company_auth', 'true');
+
+              if (token && formData.documentFile) {
+                const uploadResult = await uploadDocument(token, formData.documentFile);
+                if (uploadResult.success) {
+                  toast.success("Document uploaded successfully!");
+                } else {
+                  toast.error("Company registered, but document upload failed: " + uploadResult.message);
+                }
+              }
+
+              navigate('/company');
             } else {
               console.error("Auto-login failed after registration");
               toast.error("Company registered, but could not log in. Please sign in manually.");
@@ -687,12 +704,19 @@ export function SignUpPage() {
 
             const loginSuccess = await login(formData.email, formData.password);
             if (loginSuccess) {
-              // Success - redirect handled by login or here
+              // Set Agent Context Tokens
+              const token = localStorage.getItem("accessToken");
+              const savedUser = localStorage.getItem("brickbroker_user");
+              localStorage.setItem('agentAccessToken', token);
+              localStorage.setItem('agent_user_data', savedUser);
+              localStorage.setItem('agent_auth', 'true');
+
               toast.success("Welcome aboard!");
+              navigate('/agent');
             } else {
               toast.error("Agent registered, but auto-login failed. Please sign in.");
+              navigate('/sign-in');
             }
-            navigate('/sign-in'); // Or home if auto-login
           } else {
             toast.error(result.message || "Registration failed");
           }
