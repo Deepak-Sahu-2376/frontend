@@ -1,15 +1,18 @@
-import React from 'react';
-import { Users, Building2, Star, Clock } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { Users, Building2, Star, Clock, Activity } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { useAdmin } from '../../contexts/AdminContext';
+import { useSocket } from '../../contexts/SocketContext';
 
 import { useNavigate } from 'react-router-dom';
 
 const AdminDashboard = () => {
     const { stats, properties, approveProperty, rejectProperty, verifiedCompaniesCount, pendingCompaniesCount, pendingAgents } = useAdmin();
+    const { activeUsers } = useSocket();
     const navigate = useNavigate();
 
     const dashboardStats = [
+        { label: 'Active Users', value: activeUsers, icon: Activity, color: 'bg-green-50 text-green-600' },
         { label: 'Total Properties', value: stats.totalProperties, icon: Building2, color: 'bg-blue-50 text-blue-600' },
         { label: 'Total Agents', value: stats.totalAgents, icon: Users, color: 'bg-purple-50 text-purple-600' },
         { label: 'Featured Properties', value: stats.featuredProperties, icon: Star, color: 'bg-yellow-50 text-yellow-600' },

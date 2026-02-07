@@ -172,6 +172,10 @@ function SessionTimeoutWrapper({ children }) {
   return children;
 }
 
+import { SocketProvider } from './contexts/SocketContext';
+
+// ... (existing imports)
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -179,122 +183,124 @@ function App() {
         <ScrollToTop />
         <UserProvider>
           <SessionTimeoutWrapper>
-            <Suspense fallback={<PageLoader />}>
-              <Routes>
-                {/* Public Routes */}
-                <Route element={<PublicLayout />}>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/Home" element={<Navigate to="/" replace />} />
-                  <Route path="/home" element={<Navigate to="/" replace />} />
-                  <Route path="/properties" element={<Properties />} />
-                  <Route path="/projects" element={<AllProjects />} />
-                  <Route path="/projects/:title/:city/:id" element={<ProjectDetails />} />
-                  <Route path="/projects/:id/phases/:phaseId" element={<PhaseDetails />} />
-                  <Route path="/property/:title/:city/:id" element={<PropertyDetailsPage />} />
+            <SocketProvider>
+              <Suspense fallback={<PageLoader />}>
+                <Routes>
+                  {/* Public Routes */}
+                  <Route element={<PublicLayout />}>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/Home" element={<Navigate to="/" replace />} />
+                    <Route path="/home" element={<Navigate to="/" replace />} />
+                    <Route path="/properties" element={<Properties />} />
+                    <Route path="/projects" element={<AllProjects />} />
+                    <Route path="/projects/:title/:city/:id" element={<ProjectDetails />} />
+                    <Route path="/projects/:id/phases/:phaseId" element={<PhaseDetails />} />
+                    <Route path="/property/:title/:city/:id" element={<PropertyDetailsPage />} />
 
-                  <Route path="/about" element={<About />} />
-                  <Route path="/contact" element={<Contact />} />
-                  <Route path="/buyer/post-property" element={
-                    <SessionTimeoutWrapper>
-                      <BuyerCreateProperty />
-                    </SessionTimeoutWrapper>
-                  } />
-                  <Route path="/sign-in" element={<SignInPage />} />
-                  <Route path="/sign-up" element={<SignUpPage />} />
-                  <Route path="/buyer/signup" element={<SignUpPage />} />
-                  <Route path="/agent/signup" element={<SignUpPage />} />
-                  <Route path="/company/signup" element={<SignUpPage />} />
-                  <Route path="/profile" element={<ProfilePage />} />
-                  <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                  <Route path="/terms-of-service" element={<TermsOfService />} />
-                  <Route path="/cookie-policy" element={<CookiePolicy />} />
-                </Route>
-
-                {/* Auth Routes */}
-                <Route path="/admin/login" element={
-                  <AdminProvider>
-                    <AdminLogin />
-                  </AdminProvider>
-                } />
-                <Route path="/company/login" element={<SignInPage />} />
-                <Route path="/agent/login" element={<SignInPage />} />
-                <Route path="/buyer/login" element={<SignInPage />} />
-
-                {/* Protected Admin Routes with Shared Layout and Provider */}
-                <Route element={
-                  <AdminProvider>
-                    <ProtectedAdminRoute />
-                  </AdminProvider>
-                }>
-                  <Route element={<AdminLayout />}>
-                    <Route path="/admin" element={<AdminDashboard />} />
-                    <Route path="/admin/properties" element={<AdminProperties />} />
-                    <Route path="/admin/properties/create" element={<AdminCreateProperty />} />
-                    <Route path="/admin/properties/edit/:id" element={<AdminCreateProperty />} />
-                    <Route path="/admin/properties/pending" element={<AdminPendingProperties />} />
-                    <Route path="/admin/projects" element={<AdminProjects />} />
-                    <Route path="/admin/projects/pending-approval" element={<AdminPendingProjects />} />
-                    <Route path="/admin/projects/create" element={<CreateProject />} />
-                    <Route path="/admin/projects/edit/:id" element={<CreateProject />} />
-                    <Route path="/admin/phases/create" element={<CreatePhase />} />
-                    <Route path="/admin/agents" element={<AdminAgents />} />
-                    <Route path="/admin/agents/requests" element={<AdminAgentRequests />} />
-                    <Route path="/admin/companies" element={<AdminCompanies />} />
-                    <Route path="/admin/companies/requests" element={<AdminCompanyRequests />} />
-                    <Route path="/admin/analytics" element={<AdminAnalytics />} />
-                    <Route path="/admin/visits" element={<AdminVisitRequests />} />
-                    <Route path="/admin/inquiries" element={<AdminInquiries />} />
-                    <Route path="/admin/profile" element={<ProfilePage />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/contact" element={<Contact />} />
+                    <Route path="/buyer/post-property" element={
+                      <SessionTimeoutWrapper>
+                        <BuyerCreateProperty />
+                      </SessionTimeoutWrapper>
+                    } />
+                    <Route path="/sign-in" element={<SignInPage />} />
+                    <Route path="/sign-up" element={<SignUpPage />} />
+                    <Route path="/buyer/signup" element={<SignUpPage />} />
+                    <Route path="/agent/signup" element={<SignUpPage />} />
+                    <Route path="/company/signup" element={<SignUpPage />} />
+                    <Route path="/profile" element={<ProfilePage />} />
+                    <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                    <Route path="/terms-of-service" element={<TermsOfService />} />
+                    <Route path="/cookie-policy" element={<CookiePolicy />} />
                   </Route>
-                </Route>
 
-                {/* Company Routes with Shared Provider */}
-                <Route element={
-                  <CompanyProvider>
-                    <Outlet />
-                  </CompanyProvider>
-                }>
-                  <Route path="/company" element={<CompanyDashboard />} />
-                  <Route path="/company/agents" element={<CompanyAgents />} />
-                  <Route path="/company/agents/requests" element={<CompanyAgentRequests />} />
-                  <Route path="/company/projects/create" element={<CompanyCreateProject />} />
-                  <Route path="/company/properties/create" element={<CompanyCreateProperty />} />
-                  <Route path="/company/projects" element={<CompanyProjects />} />
-                  <Route path="/company/properties" element={<CompanyProperties />} />
-                  <Route path="/company/visits" element={<CompanyVisitRequests />} />
-                  <Route path="/company/inquiries" element={<CompanyInquiries />} />
-                  <Route path="/company/profile" element={
-                    <CompanyLayout>
-                      <ProfilePage />
-                    </CompanyLayout>
+                  {/* Auth Routes */}
+                  <Route path="/admin/login" element={
+                    <AdminProvider>
+                      <AdminLogin />
+                    </AdminProvider>
                   } />
-                  <Route path="/company/phases/create" element={<CompanyCreatePhase />} />
-                  <Route path="/company/properties/pending" element={<CompanyPendingProperties />} />
-                </Route>
+                  <Route path="/company/login" element={<SignInPage />} />
+                  <Route path="/agent/login" element={<SignInPage />} />
+                  <Route path="/buyer/login" element={<SignInPage />} />
 
-                {/* Agent Routes with Shared Provider */}
-                <Route element={
-                  <AgentProvider>
-                    <Outlet />
-                  </AgentProvider>
-                }>
-                  <Route path="/agent" element={<AgentDashboard />} />
-                  <Route path="/agent/properties/create" element={<AgentCreateProperty />} />
-                  <Route path="/agent/properties" element={<AgentProperties />} />
-                  <Route path="/agent/visits" element={<AgentVisitRequests />} />
-                  <Route path="/agent/inquiries" element={<AgentInquiries />} />
-                  <Route path="/agent/profile" element={
-                    <AgentLayout>
-                      <ProfilePage />
-                    </AgentLayout>
-                  } />
-                </Route>
+                  {/* Protected Admin Routes with Shared Layout and Provider */}
+                  <Route element={
+                    <AdminProvider>
+                      <ProtectedAdminRoute />
+                    </AdminProvider>
+                  }>
+                    <Route element={<AdminLayout />}>
+                      <Route path="/admin" element={<AdminDashboard />} />
+                      <Route path="/admin/properties" element={<AdminProperties />} />
+                      <Route path="/admin/properties/create" element={<AdminCreateProperty />} />
+                      <Route path="/admin/properties/edit/:id" element={<AdminCreateProperty />} />
+                      <Route path="/admin/properties/pending" element={<AdminPendingProperties />} />
+                      <Route path="/admin/projects" element={<AdminProjects />} />
+                      <Route path="/admin/projects/pending-approval" element={<AdminPendingProjects />} />
+                      <Route path="/admin/projects/create" element={<CreateProject />} />
+                      <Route path="/admin/projects/edit/:id" element={<CreateProject />} />
+                      <Route path="/admin/phases/create" element={<CreatePhase />} />
+                      <Route path="/admin/agents" element={<AdminAgents />} />
+                      <Route path="/admin/agents/requests" element={<AdminAgentRequests />} />
+                      <Route path="/admin/companies" element={<AdminCompanies />} />
+                      <Route path="/admin/companies/requests" element={<AdminCompanyRequests />} />
+                      <Route path="/admin/analytics" element={<AdminAnalytics />} />
+                      <Route path="/admin/visits" element={<AdminVisitRequests />} />
+                      <Route path="/admin/inquiries" element={<AdminInquiries />} />
+                      <Route path="/admin/profile" element={<ProfilePage />} />
+                    </Route>
+                  </Route>
 
-                {/* 404 Not Found Route */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-            <Toaster position="bottom-right" richColors />
+                  {/* Company Routes with Shared Provider */}
+                  <Route element={
+                    <CompanyProvider>
+                      <Outlet />
+                    </CompanyProvider>
+                  }>
+                    <Route path="/company" element={<CompanyDashboard />} />
+                    <Route path="/company/agents" element={<CompanyAgents />} />
+                    <Route path="/company/agents/requests" element={<CompanyAgentRequests />} />
+                    <Route path="/company/projects/create" element={<CompanyCreateProject />} />
+                    <Route path="/company/properties/create" element={<CompanyCreateProperty />} />
+                    <Route path="/company/projects" element={<CompanyProjects />} />
+                    <Route path="/company/properties" element={<CompanyProperties />} />
+                    <Route path="/company/visits" element={<CompanyVisitRequests />} />
+                    <Route path="/company/inquiries" element={<CompanyInquiries />} />
+                    <Route path="/company/profile" element={
+                      <CompanyLayout>
+                        <ProfilePage />
+                      </CompanyLayout>
+                    } />
+                    <Route path="/company/phases/create" element={<CompanyCreatePhase />} />
+                    <Route path="/company/properties/pending" element={<CompanyPendingProperties />} />
+                  </Route>
+
+                  {/* Agent Routes with Shared Provider */}
+                  <Route element={
+                    <AgentProvider>
+                      <Outlet />
+                    </AgentProvider>
+                  }>
+                    <Route path="/agent" element={<AgentDashboard />} />
+                    <Route path="/agent/properties/create" element={<AgentCreateProperty />} />
+                    <Route path="/agent/properties" element={<AgentProperties />} />
+                    <Route path="/agent/visits" element={<AgentVisitRequests />} />
+                    <Route path="/agent/inquiries" element={<AgentInquiries />} />
+                    <Route path="/agent/profile" element={
+                      <AgentLayout>
+                        <ProfilePage />
+                      </AgentLayout>
+                    } />
+                  </Route>
+
+                  {/* 404 Not Found Route */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
+              <Toaster position="bottom-right" richColors />
+            </SocketProvider>
           </SessionTimeoutWrapper>
         </UserProvider>
 

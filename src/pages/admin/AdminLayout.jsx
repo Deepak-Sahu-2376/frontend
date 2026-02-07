@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import {
     LayoutDashboard,
@@ -25,11 +25,20 @@ import {
     DropdownMenuTrigger,
 } from "../../components/ui/dropdown-menu";
 import { useAdmin } from '../../contexts/AdminContext';
+import { useSocket } from '../../contexts/SocketContext';
 
 const AdminLayout = ({ children }) => {
     const location = useLocation();
     const navigate = useNavigate();
     const { logout, adminUser } = useAdmin();
+    const { joinAdminRoom } = useSocket();
+
+    useEffect(() => {
+        const token = localStorage.getItem('adminAccessToken');
+        if (token) {
+            joinAdminRoom(token);
+        }
+    }, [joinAdminRoom]);
 
     const [companiesDropdownOpen, setCompaniesDropdownOpen] = useState(false);
     const [agentsDropdownOpen, setAgentsDropdownOpen] = useState(false);
