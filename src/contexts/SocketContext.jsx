@@ -12,16 +12,7 @@ export const SocketProvider = ({ children }) => {
 
     useEffect(() => {
         // Initialize socket connection
-        console.log('Initializing socket connection to:', API_BASE_URL);
         const newSocket = io(API_BASE_URL);
-
-        newSocket.on('connect', () => {
-            console.log('Socket connected:', newSocket.id);
-        });
-
-        newSocket.on('connect_error', (err) => {
-            console.error('Socket connection error:', err);
-        });
 
         setSocket(newSocket);
 
@@ -29,23 +20,17 @@ export const SocketProvider = ({ children }) => {
         // Actually, the backend emits to 'admin' room only. So we need to join that room.
 
         return () => {
-            console.log('Disconnecting socket');
             newSocket.disconnect();
         };
     }, []);
 
     const joinAdminRoom = useCallback((token) => {
         if (socket) {
-            console.log('Manually joining admin room with token');
             socket.emit('joinAdmin', token);
-
-            // Log to confirm emission
-            console.log('Emitted joinAdmin event');
 
             // Remove existing listener before adding new one to avoid duplicates
             socket.off('activeUsers');
             socket.on('activeUsers', (count) => {
-                console.log('Received activeUsers count:', count);
                 setActiveUsers(count);
             });
         }
