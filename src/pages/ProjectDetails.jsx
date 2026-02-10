@@ -116,6 +116,23 @@ const formatPrice = (price) => {
     return `₹${price.toLocaleString('en-IN')}`;
 };
 
+const getEmbedUrl = (url) => {
+    if (!url) return null;
+    const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+$/;
+    if (youtubeRegex.test(url)) {
+        let videoId = null;
+        if (url.includes('v=')) {
+            videoId = url.split('v=')[1].split('&')[0];
+        } else if (url.includes('youtu.be/')) {
+            videoId = url.split('youtu.be/')[1].split('?')[0];
+        }
+        if (videoId) {
+            return `https://www.youtube.com/embed/${videoId}?rel=0`;
+        }
+    }
+    return null;
+};
+
 const ProjectDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -323,16 +340,42 @@ const ProjectDetails = () => {
                     >
                         {project.media[previewIndex || 0]?.type === 'video' ? (
                             <div className="w-full h-full relative">
-                                <video
-                                    src={project.media[previewIndex || 0].url}
-                                    className="w-full h-full object-cover"
-                                    muted loop playsInline
-                                    onMouseOver={e => e.target.play()}
-                                    onMouseOut={e => e.target.pause()}
-                                />
-                                <div className="absolute inset-0 flex items-center justify-center bg-black/10 transition-colors group-hover:bg-black/20">
-                                    <PlayCircle className="w-16 h-16 text-white/90" />
-                                </div>
+                                {getEmbedUrl(project.media[previewIndex || 0].url) ? (
+                                    <iframe
+                                        src={getEmbedUrl(project.media[previewIndex || 0].url)}
+                                        title="Project Video"
+                                        className="w-full h-full pointer-events-none" // pointer-events-none to let click pass to openLightbox? No, iframe captures clicks. 
+                                        // Actually better to show a thumbnail with play button for YouTube in gallery preview, 
+                                        // but getting YT thumbnail is complex without API key or regex hack.
+                                        // For now, let's just render the iframe. But clicking it plays it, doesn't open lightbox easily.
+                                        // Alternative: Cover with transparent div to capture click?
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowFullScreen
+                                    ></iframe>
+                                ) : (
+                                    <video
+                                        src={project.media[previewIndex || 0].url}
+                                        className="w-full h-full object-cover"
+                                        muted loop playsInline
+                                        onMouseOver={e => e.target.play()}
+                                        onMouseOut={e => e.target.pause()}
+                                    />
+                                )}
+                                {!getEmbedUrl(project.media[previewIndex || 0].url) && (
+                                    <div className="absolute inset-0 flex items-center justify-center bg-black/10 transition-colors group-hover:bg-black/20">
+                                        <PlayCircle className="w-16 h-16 text-white/90" />
+                                    </div>
+                                )}
+                                {/* Overlay to allow clicking to open lightbox over iframe? 
+                                    If user wants to play in gallery, they can't if we block events.
+                                    If we don't block, they can't open lightbox.
+                                    Decided: For YouTube, let them play here. Lightbox button is active separately? 
+                                    Actually I'll add a "View Fullscreen" button that works explicitly.
+                                    But the container has `onClick`. I'll add a transparent overlay only if it's NOT playing? 
+                                    I'll add an overlay that is visible on hover?
+                                    
+                                    Let's just leave iframe interactive. The "View Fullscreen" button below is absolute positioned.
+                                */}
                             </div>
                         ) : (
                             <img
@@ -342,8 +385,11 @@ const ProjectDetails = () => {
                             />
                         )}
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors pointer-events-none" />
-                        <div className="absolute bottom-4 right-4">
-                            <Button variant="secondary" className="bg-white/90 hover:bg-white text-gray-900 shadow-lg">
+                        <div className="absolute bottom-4 right-4 z-10 pointer-events-auto">
+                            <Button variant="secondary" className="bg-white/90 hover:bg-white text-gray-900 shadow-lg" onClick={(e) => {
+                                e.stopPropagation();
+                                openLightbox(previewIndex || 0);
+                            }}>
                                 <Maximize2 className="w-4 h-4 mr-2" /> View Fullscreen
                             </Button>
                         </div>
@@ -539,13 +585,23 @@ const ProjectDetails = () => {
                             <div className="py-8 border-t border-gray-100">
                                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Project Video</h2>
                                 <div className="rounded-2xl overflow-hidden bg-black aspect-video relative">
-                                    <video
-                                        src={project.videoUrl}
-                                        controls
-                                        className="w-full h-full object-contain"
-                                    >
-                                        Your browser does not support the video tag.
-                                    </video>
+                                    {getEmbedUrl(project.videoUrl) ? (
+                                        <iframe
+                                            src={getEmbedUrl(project.videoUrl)}
+                                            title="Project Video"
+                                            className="w-full h-full"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allowFullScreen
+                                        ></iframe>
+                                    ) : (
+                                        <video
+                                            src={project.videoUrl}
+                                            controls
+                                            className="w-full h-full object-contain"
+                                        >
+                                            Your browser does not support the video tag.
+                                        </video>
+                                    )}
                                 </div>
                             </div>
                         )}
@@ -682,11 +738,23 @@ const ProjectDetails = () => {
 
                     <div className="w-full h-full p-4 flex flex-col items-center justify-center">
                         {project.media[activeMediaIndex].type === 'video' ? (
-                            <video
-                                controls autoPlay playsInline
-                                className="max-w-full max-h-[85vh] object-contain rounded shadow-2xl"
-                                src={project.media[activeMediaIndex].url}
-                            />
+                            <div className="w-full h-full max-h-[85vh] aspect-video max-w-6xl">
+                                {getEmbedUrl(project.media[activeMediaIndex].url) ? (
+                                    <iframe
+                                        src={getEmbedUrl(project.media[activeMediaIndex].url)}
+                                        title={project.media[activeMediaIndex].label}
+                                        className="w-full h-full rounded shadow-2xl"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowFullScreen
+                                    ></iframe>
+                                ) : (
+                                    <video
+                                        controls autoPlay playsInline
+                                        className="w-full h-full object-contain rounded shadow-2xl"
+                                        src={project.media[activeMediaIndex].url}
+                                    />
+                                )}
+                            </div>
                         ) : (
                             <img
                                 src={project.media[activeMediaIndex].url}

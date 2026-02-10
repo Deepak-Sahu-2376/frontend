@@ -56,11 +56,12 @@ const CompanyCreateProperty = () => {
     const [amenities, setAmenities] = useState([]);
     const [images, setImages] = useState([]);
     const [floorPlan, setFloorPlan] = useState(null);
-    const [video, setVideo] = useState(null);
+    const [videoFile, setVideoFile] = useState(null);
 
     const [formData, setFormData] = useState({
         title: '',
         description: '',
+        video: '', // Changed from file to URL string
         propertyType: 'APARTMENT',
         listingType: 'SALE',
         bedrooms: '',
@@ -154,8 +155,12 @@ const CompanyCreateProperty = () => {
                 submitFormData.append('floorPlan', floorPlan);
             }
 
-            if (video) {
-                submitFormData.append('video', video);
+            if (floorPlan) {
+                submitFormData.append('floorPlan', floorPlan);
+            }
+
+            if (videoFile) {
+                submitFormData.append('video', videoFile);
             }
 
             // Use relative URL to leverage Vite proxy and avoid CORS/Network issues
@@ -655,20 +660,48 @@ const CompanyCreateProperty = () => {
                             </div>
 
                             {/* Video */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Property Video</label>
-                                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-orange-500 transition-colors">
+                            <div className="space-y-4">
+                                <label className="block text-sm font-medium text-gray-700">Property Video</label>
+
+                                {/* Option 1: URL */}
+                                <div>
+                                    <label className="block text-xs text-gray-500 mb-1">Option 1: YouTube URL</label>
                                     <input
-                                        type="file"
-                                        accept="video/*"
-                                        onChange={(e) => setVideo(e.target.files[0])}
-                                        className="hidden"
-                                        id="video-upload"
+                                        type="text"
+                                        name="video"
+                                        value={formData.video}
+                                        onChange={(e) => {
+                                            handleInputChange(e);
+                                            if (e.target.value) setVideoFile(null);
+                                        }}
+                                        placeholder="e.g. https://www.youtube.com/watch?v=..."
+                                        className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all"
                                     />
-                                    <label htmlFor="video-upload" className="cursor-pointer flex flex-col items-center justify-center">
-                                        <Video className="h-10 w-10 text-gray-400 mb-2" />
-                                        <span className="text-sm text-gray-500">{video ? video.name : 'Click to upload video'}</span>
-                                    </label>
+                                </div>
+
+                                <div className="text-center text-xs text-gray-400 font-medium">- OR -</div>
+
+                                {/* Option 2: File Upload */}
+                                <div>
+                                    <label className="block text-xs text-gray-500 mb-1">Option 2: Upload Video (will be uploaded to YouTube)</label>
+                                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-orange-500 transition-colors">
+                                        <input
+                                            type="file"
+                                            accept="video/*"
+                                            onChange={(e) => {
+                                                setVideoFile(e.target.files[0]);
+                                                if (e.target.files[0]) {
+                                                    setFormData(prev => ({ ...prev, video: '' })); // Clear URL
+                                                }
+                                            }}
+                                            className="hidden"
+                                            id="video-upload"
+                                        />
+                                        <label htmlFor="video-upload" className="cursor-pointer flex flex-col items-center justify-center">
+                                            <Video className="h-10 w-10 text-gray-400 mb-2" />
+                                            <span className="text-sm text-gray-500">{videoFile ? videoFile.name : 'Click to upload video'}</span>
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
                         </div>

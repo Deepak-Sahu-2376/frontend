@@ -51,7 +51,8 @@ const AdminCreateProperty = () => {
     const [existingVideo, setExistingVideo] = useState(null);
 
     const [floorPlan, setFloorPlan] = useState(null);
-    const [video, setVideo] = useState(null);
+    const [videoUrl, setVideoUrl] = useState(''); // URL Input
+    const [videoFile, setVideoFile] = useState(null); // File Upload
     const [companies, setCompanies] = useState([]);
     const [loadingCompanies, setLoadingCompanies] = useState(false);
 
@@ -181,7 +182,9 @@ const AdminCreateProperty = () => {
                 setAmenities(p.amenities ? p.amenities.map(a => a.name || a) : []);
                 setExistingImages(p.images || []);
                 setExistingFloorPlan(p.floorPlan);
-                setExistingVideo(p.video);
+                setExistingFloorPlan(p.floorPlan);
+                setVideoUrl(p.video || ''); // Set video URL if exists
+                setVideoFile(null);
             } else {
                 toast.error("Failed to fetch property details");
             }
@@ -281,7 +284,8 @@ const AdminCreateProperty = () => {
                 floorNumber: Number(formData.floorNumber),
                 totalFloors: Number(formData.totalFloors),
                 coveredParkingSpots: Number(formData.coveredParkingSpots),
-                amenities: amenities
+                amenities: amenities,
+                video: videoUrl // Add video URL to property data (if manually entered)
             };
 
             // Send as string so Multer treats it as a text field in req.body
@@ -301,8 +305,8 @@ const AdminCreateProperty = () => {
                 submitFormData.append('floorPlan', floorPlan);
             }
 
-            if (video) {
-                submitFormData.append('video', video);
+            if (videoFile) {
+                submitFormData.append('video', videoFile);
             }
 
             const url = isEditMode
@@ -891,28 +895,56 @@ const AdminCreateProperty = () => {
                             </div>
                         </div>
 
-                        {/* Video */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Property Video</label>
-                            {existingVideo && (
-                                <div className="mb-2 flex items-center gap-2 text-sm text-blue-600 bg-blue-50 p-2 rounded">
-                                    <Video className="h-4 w-4" />
-                                    <a href={API_BASE_URL + existingVideo} target="_blank" rel="noopener noreferrer" className="hover:underline truncate max-w-xs">{existingVideo.split('/').pop()}</a>
-                                    <span className="text-gray-400 text-xs ml-auto">(Upload new to replace)</span>
+                        {/* Video Selection */}
+                        <div className="space-y-4">
+                            <label className="block text-sm font-medium text-gray-700">Property Video</label>
+
+                            {/* Option 1: URL */}
+                            <div>
+                                <label className="block text-xs text-gray-500 mb-1">Option 1: YouTube URL</label>
+                                <div className="flex gap-2">
+                                    <div className="relative flex-1">
+                                        <Video className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                                        <input
+                                            type="text"
+                                            value={videoUrl}
+                                            onChange={(e) => {
+                                                setVideoUrl(e.target.value);
+                                                if (e.target.value) setVideoFile(null); // Clear file if URL provided
+                                            }}
+                                            placeholder="https://www.youtube.com/watch?v=..."
+                                            className="w-full rounded-lg border border-gray-300 pl-10 pr-4 py-2 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all"
+                                        />
+                                    </div>
                                 </div>
-                            )}
-                            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-orange-500 transition-colors">
-                                <input
-                                    type="file"
-                                    accept="video/*"
-                                    onChange={(e) => setVideo(e.target.files[0])}
-                                    className="hidden"
-                                    id="video-upload"
-                                />
-                                <label htmlFor="video-upload" className="cursor-pointer flex flex-col items-center justify-center">
-                                    <Video className="h-10 w-10 text-gray-400 mb-2" />
-                                    <span className="text-sm text-gray-500">{video ? video.name : 'Click to upload video'}</span>
-                                </label>
+                                {videoUrl && (
+                                    <p className="mt-2 text-sm text-gray-500">
+                                        Preview: <a href={videoUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{videoUrl}</a>
+                                    </p>
+                                )}
+                            </div>
+
+                            <div className="text-center text-xs text-gray-400 font-medium">- OR -</div>
+
+                            {/* Option 2: File Upload */}
+                            <div>
+                                <label className="block text-xs text-gray-500 mb-1">Option 2: Upload Video (will be uploaded to YouTube)</label>
+                                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-orange-500 transition-colors">
+                                    <input
+                                        type="file"
+                                        accept="video/*"
+                                        onChange={(e) => {
+                                            setVideoFile(e.target.files[0]);
+                                            if (e.target.files[0]) setVideoUrl(''); // Clear URL if file selected
+                                        }}
+                                        className="hidden"
+                                        id="video-upload"
+                                    />
+                                    <label htmlFor="video-upload" className="cursor-pointer flex flex-col items-center justify-center">
+                                        <Video className="h-10 w-10 text-gray-400 mb-2" />
+                                        <span className="text-sm text-gray-500">{videoFile ? videoFile.name : 'Click to upload video'}</span>
+                                    </label>
+                                </div>
                             </div>
                         </div>
                     </div>

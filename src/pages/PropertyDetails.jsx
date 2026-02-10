@@ -111,6 +111,23 @@ const getAmenityIcon = (name) => {
     return amenityIcons['default'];
 };
 
+const getEmbedUrl = (url) => {
+    if (!url) return null;
+    const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+$/;
+    if (youtubeRegex.test(url)) {
+        let videoId = null;
+        if (url.includes('v=')) {
+            videoId = url.split('v=')[1].split('&')[0];
+        } else if (url.includes('youtu.be/')) {
+            videoId = url.split('youtu.be/')[1].split('?')[0];
+        }
+        if (videoId) {
+            return `https://www.youtube.com/embed/${videoId}?rel=0`;
+        }
+    }
+    return null;
+};
+
 const PropertyDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -459,13 +476,23 @@ const PropertyDetails = () => {
                             <div className="py-8 border-t border-gray-100">
                                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Property Video</h2>
                                 <div className="rounded-2xl overflow-hidden bg-black aspect-video relative">
-                                    <video
-                                        src={property.videoUrl}
-                                        controls
-                                        className="w-full h-full object-contain"
-                                    >
-                                        Your browser does not support the video tag.
-                                    </video>
+                                    {getEmbedUrl(property.videoUrl) ? (
+                                        <iframe
+                                            src={getEmbedUrl(property.videoUrl)}
+                                            title="Property Video"
+                                            className="w-full h-full"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allowFullScreen
+                                        ></iframe>
+                                    ) : (
+                                        <video
+                                            src={property.videoUrl}
+                                            controls
+                                            className="w-full h-full object-contain"
+                                        >
+                                            Your browser does not support the video tag.
+                                        </video>
+                                    )}
                                 </div>
                             </div>
                         )}
