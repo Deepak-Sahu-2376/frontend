@@ -273,17 +273,16 @@ export function SignUpPage() {
 
   const sendCompanyOtp = async (companyData) => {
     try {
-      const params = new URLSearchParams({
-        email: companyData.email,
-        companyName: companyData.companyName,
-        contactPerson: companyData.contactPersonName,
-      });
-
-      const response = await fetch(`${API_BASE_URL}/api/v1/companies/register/send-otp?${params}`, {
+      const response = await fetch(`${API_BASE_URL}/api/v1/companies/register/send-otp`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          email: companyData.email,
+          companyName: companyData.companyName,
+          contactPerson: companyData.contactPersonName,
+        })
       });
 
       const result = await response.json();
